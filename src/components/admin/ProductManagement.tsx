@@ -35,9 +35,23 @@ const ProductManagement = () => {
   };
 
   const handleUpdateProduct = async (productData: Product) => {
-    const { error } = await supabase.from('products').update({ name: productData.name, price: productData.price, original_price: productData.originalPrice, short_description: productData.shortDescription, description: productData.description, features: productData.features, in_stock: productData.inStock }).eq('id', productData.id);
-    if (error) console.error('Error updating product:', error);
-    else {
+    const { error } = await supabase
+      .from('products')
+      .update({
+        name: productData.name,
+        price: productData.price,
+        original_price: productData.originalPrice,
+        short_description: productData.shortDescription,
+        description: productData.description,
+        features: productData.features,
+        in_stock: productData.inStock,
+        images: productData.images,
+      })
+      .eq('id', productData.id);
+
+    if (error) {
+      console.error('Error updating product:', error);
+    } else {
       await fetchProducts();
       setEditingProduct(null);
     }
