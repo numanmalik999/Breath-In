@@ -22,9 +22,9 @@ const Header = () => {
 
             {/* Navigation */}
             <nav className="hidden md:flex space-x-8">
-              <a href="#" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
+              <Link to="/shop" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 Shop
-              </a>
+              </Link>
               <a href="#" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 About
               </a>
