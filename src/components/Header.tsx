@@ -32,6 +32,9 @@ const Header = () => {
               <Link to="/contact" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 Contact
               </Link>
+              <Link to="/track-order" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
+                Track Order
+              </Link>
               <Link to="/admin" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 Admin
               </Link>

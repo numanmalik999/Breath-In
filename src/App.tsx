@@ -13,6 +13,7 @@ import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import TrackOrderPage from './pages/TrackOrderPage';
+import ShippingReturnsPage from './pages/ShippingReturnsPage';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { SearchProvider } from './context/SearchContext';
@@ -42,6 +43,7 @@ function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/account" element={<AccountPage />} />
                   <Route path="/track-order" element={<TrackOrderPage />} />
+                  <Route path="/shipping-returns" element={<ShippingReturnsPage />} />
                   <Route path="/product/:productId" element={<ProductPage />} />
                   <Route element={<AdminRoute />}>
                     <Route path="/admin" element={<AdminDashboard />} />
