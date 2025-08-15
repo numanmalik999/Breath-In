@@ -25,77 +25,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
-
-        setSession(session);
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          const { data: userProfile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .single();
-          
-          if (profileError && profileError.code !== 'PGRST116') {
-            throw profileError;
-          }
-          setProfile(userProfile ?? null);
-        } else {
-          setProfile(null);
-        }
-      } catch (error) {
-        console.error("Error initializing auth:", error);
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initializeAuth();
-
+    // onAuthStateChange is the single source of truth.
+    // It fires once on initialization and then for every auth event.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       const currentUser = session?.user ?? null;
       setUser(currentUser);
 
       if (currentUser) {
-        const { data: userProfile, error: profileError } = await supabase
+        // If there's a user, fetch their profile.
+        const { data: userProfile, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', currentUser.id)
           .single();
         
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error("Error fetching profile on auth change:", profileError);
+        if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is not a critical error.
+          console.error('Error fetching profile:', error);
           setProfile(null);
         } else {
           setProfile(userProfile ?? null);
         }
       } else {
+        // If there's no session, clear the profile.
         setProfile(null);
       }
+      
+      // The listener has fired, so we are no longer in an initial loading state.
+      // This is the critical part that was failing.
+      setLoading(false);
     });
 
+    // Cleanup the subscription when the component unmounts.
     return () => {
       subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error signing out:", error);
-    }
+    await supabase.auth.signOut();
   };
 
-  const value = { session, user, profile, loading, signOut };
+  const value = {
+    session,
+    user,
+    profile,
+    loading,
+    signOut,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
