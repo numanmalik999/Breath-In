@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../integrations/supabase/client';
-import { Lock } from 'lucide-react';
+import { Lock, Tag } from 'lucide-react';
 
 const CheckoutPage = () => {
-  const { state, getCartTotal, clearCart } = useCart();
+  const { state, getCartTotal, getDiscount, getFinalTotal, clearCart } = useCart();
   const { session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showApartment, setShowApartment] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !session) {
@@ -30,7 +31,7 @@ const CheckoutPage = () => {
       .from('orders')
       .insert({
         user_id: session.user.id,
-        total_amount: getCartTotal(),
+        total_amount: getFinalTotal(),
         status: 'pending',
       })
       .select()
@@ -73,34 +74,40 @@ const CheckoutPage = () => {
       <h1 className="text-3xl font-serif text-charcoal mb-8">Checkout</h1>
       <div className="grid lg:grid-cols-2 gap-12">
         <div className="bg-white p-8 rounded-2xl shadow-lg">
-          <h2 className="text-xl font-semibold mb-6">Shipping Information</h2>
-          <form onSubmit={handlePlaceOrder} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+          <form onSubmit={handlePlaceOrder} className="space-y-6">
+            <section>
+              <h2 className="text-xl font-semibold mb-2">Contact information</h2>
+              <p className="text-sm text-gray-600 mb-4">We'll use this email to send you details and updates about your order.</p>
               <input type="email" defaultValue={session.user.email} disabled className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input type="text" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-              <input type="text" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                <input type="text" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold mb-2">Shipping address</h2>
+              <p className="text-sm text-gray-600 mb-4">Enter the address where you want your order delivered.</p>
+              <div className="space-y-4">
+                <input type="text" placeholder="Country / Region" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                <div className="grid grid-cols-2 gap-4">
+                  <input type="text" placeholder="First name" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                  <input type="text" placeholder="Last name" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                </div>
+                <input type="text" placeholder="Street address" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                {!showApartment && <button type="button" onClick={() => setShowApartment(true)} className="text-sm text-sageGreen hover:underline">+ Add apartment, suite, unit, etc.</button>}
+                {showApartment && <input type="text" placeholder="Apartment, suite, etc. (optional)" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />}
+                <div className="grid grid-cols-2 gap-4">
+                  <input type="text" placeholder="Town / City" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                  <input type="text" placeholder="State / County" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input type="text" placeholder="Postcode / ZIP" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                  <input type="text" placeholder="Phone (optional)" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
-                <input type="text" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-              </div>
-            </div>
-            <div className="pt-6">
+            </section>
+            
+            <div className="pt-4">
               <button type="submit" disabled={loading} className="w-full bg-sageGreen text-white py-4 rounded-lg font-medium hover:bg-opacity-90 disabled:bg-opacity-50 flex items-center justify-center space-x-2">
                 <Lock className="h-5 w-5" />
-                <span>{loading ? 'Placing Order...' : `Place Order - $${getCartTotal().toFixed(2)}`}</span>
+                <span>{loading ? 'Placing Order...' : `Place Order - $${getFinalTotal().toFixed(2)}`}</span>
               </button>
             </div>
           </form>
@@ -120,18 +127,15 @@ const CheckoutPage = () => {
             ))}
           </div>
           <div className="bg-white p-6 rounded-2xl shadow-lg space-y-2">
-            <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span>${getCartTotal().toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Shipping</span>
-              <span className="text-green-600">Free</span>
-            </div>
-            <div className="flex justify-between font-bold text-lg pt-2 border-t">
-              <span>Total</span>
-              <span>${getCartTotal().toFixed(2)}</span>
-            </div>
+            <div className="flex justify-between"><span>Subtotal</span><span>${getCartTotal().toFixed(2)}</span></div>
+            {getDiscount() > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span className="flex items-center gap-2"><Tag className="h-4 w-4" /> Discount ({state.coupon?.code})</span>
+                <span>-${getDiscount().toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between"><span>Shipping</span><span className="text-green-600">Free</span></div>
+            <div className="flex justify-between font-bold text-lg pt-2 border-t"><span>Total</span><span>${getFinalTotal().toFixed(2)}</span></div>
           </div>
         </div>
       </div>

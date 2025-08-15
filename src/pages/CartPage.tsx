@@ -1,9 +1,35 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { Plus, Minus, Trash2, ShoppingCart } from 'lucide-react';
+import { supabase } from '../integrations/supabase/client';
+import { Plus, Minus, Trash2, ShoppingCart, Tag } from 'lucide-react';
 
 const CartPage = () => {
-  const { state, updateQuantity, removeFromCart, getCartTotal } = useCart();
+  const { state, updateQuantity, removeFromCart, getCartTotal, applyCoupon, removeCoupon, getDiscount, getFinalTotal } = useCart();
+  const [couponCode, setCouponCode] = useState('');
+  const [couponError, setCouponError] = useState('');
+  const [couponSuccess, setCouponSuccess] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode) return;
+    setIsValidating(true);
+    setCouponError('');
+    setCouponSuccess('');
+
+    const { data, error } = await supabase.functions.invoke('validate-coupon', {
+      body: { couponCode: couponCode.trim() },
+    });
+
+    if (error || data.error) {
+      setCouponError(error?.message || data.error);
+    } else {
+      applyCoupon(data);
+      setCouponSuccess(`Coupon "${data.code}" applied!`);
+      setCouponCode('');
+    }
+    setIsValidating(false);
+  };
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-4">
@@ -29,36 +55,53 @@ const CartPage = () => {
                   <p className="text-sageGreen font-bold mt-1">${item.price.toFixed(2)}</p>
                 </div>
                 <div className="flex items-center border border-gray-300 rounded-lg">
-                  <button
-                    onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)}
-                    className="px-3 py-2 hover:bg-gray-100 transition-colors duration-200"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
+                  <button onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)} className="px-3 py-2 hover:bg-gray-100"><Minus className="h-4 w-4" /></button>
                   <span className="px-4 py-2 border-x border-gray-300">{item.quantity}</span>
-                  <button
-                    onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)}
-                    className="px-3 py-2 hover:bg-gray-100 transition-colors duration-200"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
+                  <button onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)} className="px-3 py-2 hover:bg-gray-100"><Plus className="h-4 w-4" /></button>
                 </div>
-                <p className="font-semibold text-lg w-20 text-right">
-                  ${(item.price * (item.quantity || 1)).toFixed(2)}
-                </p>
-                <button onClick={() => removeFromCart(item.id)} className="text-gray-500 hover:text-red-600">
-                  <Trash2 className="h-5 w-5" />
-                </button>
+                <p className="font-semibold text-lg w-20 text-right">${(item.price * (item.quantity || 1)).toFixed(2)}</p>
+                <button onClick={() => removeFromCart(item.id)} className="text-gray-500 hover:text-red-600"><Trash2 className="h-5 w-5" /></button>
               </div>
             ))}
           </div>
-          <div className="p-6 bg-gray-50">
-            <div className="flex justify-end items-center">
-              <div className="text-right">
-                <p className="text-gray-600">Subtotal</p>
-                <p className="text-2xl font-bold text-charcoal">${getCartTotal().toFixed(2)}</p>
-                <p className="text-sm text-gray-500 mt-1">Taxes and shipping calculated at checkout</p>
+          <div className="p-6 bg-gray-50 space-y-6">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Have a coupon?</label>
+              <div className="mt-1 flex gap-2">
+                <input
+                  type="text"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  placeholder="Enter coupon code"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+                  disabled={!!state.coupon}
+                />
+                <button onClick={handleApplyCoupon} disabled={isValidating || !!state.coupon} className="bg-dustyBlue text-white px-6 py-2 rounded-lg font-medium hover:bg-opacity-90 disabled:bg-opacity-50">
+                  {isValidating ? 'Applying...' : 'Apply'}
+                </button>
               </div>
+              {couponError && <p className="text-red-600 text-sm mt-1">{couponError}</p>}
+              {couponSuccess && <p className="text-green-600 text-sm mt-1">{couponSuccess}</p>}
+            </div>
+            <div className="text-right space-y-2">
+              <div className="flex justify-end items-center space-x-4">
+                <span className="text-gray-600">Subtotal</span>
+                <span className="text-xl font-semibold text-charcoal w-28 text-right">${getCartTotal().toFixed(2)}</span>
+              </div>
+              {state.coupon && (
+                <div className="flex justify-end items-center space-x-4">
+                  <span className="text-green-600 flex items-center gap-2">
+                    <Tag className="h-4 w-4" /> Discount ({state.coupon.code})
+                    <button onClick={removeCoupon} className="text-red-500 hover:underline text-xs">(Remove)</button>
+                  </span>
+                  <span className="text-xl font-semibold text-green-600 w-28 text-right">-${getDiscount().toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-end items-center space-x-4 border-t pt-2">
+                <span className="text-lg font-bold text-charcoal">Total</span>
+                <span className="text-2xl font-bold text-charcoal w-28 text-right">${getFinalTotal().toFixed(2)}</span>
+              </div>
+              <p className="text-sm text-gray-500 mt-1">Taxes and shipping calculated at checkout</p>
             </div>
             <div className="mt-6 flex justify-end">
               <Link to="/checkout" className="bg-sageGreen text-white px-8 py-4 rounded-lg font-medium hover:bg-opacity-90 transform hover:scale-105 transition-all duration-200">
