@@ -18,7 +18,7 @@ export interface Product {
 }
 
 // Helper to map database product to frontend product
-const mapProductData = (data: any): Product => ({
+export const mapProductData = (data: any): Product => ({
   id: data.slug,
   name: data.name,
   price: data.price,
