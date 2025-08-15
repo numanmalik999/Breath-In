@@ -25,35 +25,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // onAuthStateChange is the single source of truth.
-    // It fires once on initialization and then for every auth event.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Set core auth state synchronously
       setSession(session);
       const currentUser = session?.user ?? null;
       setUser(currentUser);
+      
+      // Stop loading screen immediately
+      setLoading(false);
 
+      // Fetch profile details separately, without blocking the UI
       if (currentUser) {
-        const { data: userProfile, error } = await supabase
+        supabase
           .from('profiles')
           .select('*')
           .eq('id', currentUser.id)
-          .single();
-        
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching profile:', error);
-          setProfile(null);
-        } else {
-          setProfile(userProfile ?? null);
-        }
+          .single()
+          .then(({ data: userProfile, error }) => {
+            if (error && error.code !== 'PGRST116') {
+              console.error('Error fetching profile:', error);
+              setProfile(null);
+            } else {
+              setProfile(userProfile ?? null);
+            }
+          });
       } else {
+        // Clear profile if user is logged out
         setProfile(null);
       }
-      
-      // The listener has fired, so we are no longer in an initial loading state.
-      setLoading(false);
     });
 
-    // Cleanup the subscription when the component unmounts.
     return () => {
       subscription.unsubscribe();
     };
@@ -71,7 +72,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
   };
 
-  // Display a loading indicator while the initial auth state is being determined.
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-warmBeige">
