@@ -1,9 +1,12 @@
+import { Link } from 'react-router-dom';
 import { Search, ShoppingBag, User, Menu } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import Cart from './Cart';
 
 const Header = () => {
   const { toggleCart, getCartCount } = useCart();
+  const { session } = useAuth();
 
   return (
     <>
@@ -12,9 +15,9 @@ const Header = () => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <div className="text-2xl font-serif font-semibold text-sageGreen">
+              <Link to="/" className="text-2xl font-serif font-semibold text-sageGreen">
                 Breathe
-              </div>
+              </Link>
             </div>
 
             {/* Navigation */}
@@ -31,15 +34,17 @@ const Header = () => {
               <a href="#" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 Contact
               </a>
-              <a href="/admin" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
+              <Link to="/admin" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 Admin
-              </a>
+              </Link>
             </nav>
 
             {/* Right side icons */}
             <div className="flex items-center space-x-4">
               <Search className="h-5 w-5 text-charcoal hover:text-sageGreen cursor-pointer transition-colors duration-200" />
-              <User className="h-5 w-5 text-charcoal hover:text-sageGreen cursor-pointer transition-colors duration-200" />
+              <Link to={session ? "/account" : "/login"}>
+                <User className="h-5 w-5 text-charcoal hover:text-sageGreen cursor-pointer transition-colors duration-200" />
+              </Link>
               <div className="relative">
                 <ShoppingBag 
                   className="h-5 w-5 text-charcoal hover:text-sageGreen cursor-pointer transition-colors duration-200"
