@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { User, LogOut, ShoppingBag } from 'lucide-react';
 
@@ -30,9 +30,9 @@ const AccountPage = () => {
           </div>
           <div className="flex items-center space-x-3">
             <ShoppingBag className="h-5 w-5 text-gray-500" />
-            <a href="#" className="text-sageGreen hover:underline">
+            <Link to="/order-history" className="text-sageGreen hover:underline">
               View Order History
-            </a>
+            </Link>
           </div>
         </div>
         <div className="mt-8 border-t pt-6">

@@ -25,59 +25,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // onAuthStateChange fires once on initialization, and then for every auth event.
-    // This is the single source of truth for the user's auth state.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const initializeAuth = async () => {
       try {
-        setSession(session);
-        setUser(session?.user ?? null);
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
 
-        if (session?.user) {
-          // If there's a user, fetch their profile.
-          const { data: userProfile, error } = await supabase
+        setSession(session);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          const { data: userProfile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
-            .eq('id', session.user.id)
+            .eq('id', currentUser.id)
             .single();
           
-          // We only want to log an error if it's not the expected "no rows found" error.
-          if (error && error.code !== 'PGRST116') {
-            console.error('Error fetching profile:', error);
-            setProfile(null);
-          } else {
-            setProfile(userProfile ?? null);
+          if (profileError && profileError.code !== 'PGRST116') {
+            throw profileError;
           }
+          setProfile(userProfile ?? null);
         } else {
-          // If there's no session, clear the profile.
           setProfile(null);
         }
       } catch (error) {
-        // Catch any unexpected errors during the process.
-        console.error('Error in onAuthStateChange handler:', error);
+        console.error("Error initializing auth:", error);
+        setSession(null);
+        setUser(null);
         setProfile(null);
       } finally {
-        // This block is GUARANTEED to run, ensuring we never get stuck in a loading state.
         setLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setSession(session);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        const { data: userProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentUser.id)
+          .single();
+        
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error("Error fetching profile on auth change:", profileError);
+          setProfile(null);
+        } else {
+          setProfile(userProfile ?? null);
+        }
+      } else {
+        setProfile(null);
       }
     });
 
-    // Cleanup the subscription when the component unmounts.
     return () => {
       subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
-  const value = {
-    session,
-    user,
-    profile,
-    loading,
-    signOut,
-  };
+  const value = { session, user, profile, loading, signOut };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

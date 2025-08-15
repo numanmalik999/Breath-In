@@ -6,6 +6,7 @@ import AdminDashboard from './components/admin/AdminDashboard';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import AccountPage from './pages/AccountPage';
+import OrderHistoryPage from './pages/OrderHistoryPage';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import AdminRoute from './components/AdminRoute';
@@ -22,6 +23,7 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/account" element={<AccountPage />} />
+                <Route path="/order-history" element={<OrderHistoryPage />} />
                 <Route path="/product/:productId" element={<ProductPage />} />
                 <Route element={<AdminRoute />}>
                   <Route path="/admin" element={<AdminDashboard />} />
