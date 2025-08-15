@@ -29,9 +29,6 @@ const Header = () => {
               <Link to="/about" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 About
               </Link>
-              <a href="#" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
-                Blog
-              </a>
               <Link to="/contact" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 Contact
               </Link>
