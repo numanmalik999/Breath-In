@@ -25,18 +25,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // This function handles the initial session check.
-    const initializeSession = async () => {
+    const fetchInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-        setUser(session?.user ?? null);
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        setSession(initialSession);
+        const currentUser = initialSession?.user ?? null;
+        setUser(currentUser);
 
-        if (session?.user) {
+        if (currentUser) {
           const { data: userProfile, error } = await supabase
             .from('profiles')
             .select('*')
-            .eq('id', session.user.id)
+            .eq('id', currentUser.id)
             .single();
           if (error && error.code !== 'PGRST116') throw error;
           setProfile(userProfile ?? null);
@@ -44,26 +44,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfile(null);
         }
       } catch (error) {
-        console.error("Error during session initialization:", error);
-        setProfile(null); // Clear profile on error
+        console.error("Error fetching initial session:", error);
       } finally {
-        // This is crucial: setLoading(false) is called regardless of success or failure.
         setLoading(false);
       }
     };
 
-    initializeSession();
+    fetchInitialSession();
 
-    // This listener handles subsequent auth changes (SIGN_IN, SIGN_OUT, etc.).
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+      setSession(newSession);
+      const currentUser = newSession?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
         const { data: userProfile, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', session.user.id)
+          .eq('id', currentUser.id)
           .single();
         if (error && error.code !== 'PGRST116') {
           console.error('Error fetching profile on auth change:', error);
@@ -93,9 +91,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
   };
 
-  // Do not render children until the initial loading is complete.
-  // This prevents rendering protected routes with an incorrect auth state.
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-warmBeige">
+        <p className="text-charcoal font-serif text-lg">Initializing...</p>
+      </div>
+    );
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
