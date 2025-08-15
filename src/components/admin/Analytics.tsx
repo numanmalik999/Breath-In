@@ -1,40 +1,79 @@
+import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Users, ShoppingBag, DollarSign, Eye } from 'lucide-react';
+import { supabase } from '../../integrations/supabase/client';
+
+interface Metric {
+  title: string;
+  value: string;
+  change: string;
+  changeType: 'positive' | 'negative';
+  icon: React.ElementType;
+  color: string;
+}
+
+interface SalesData {
+  month: string;
+  sales: number;
+}
 
 const Analytics = () => {
-  const metrics = [
-    {
-      title: 'Revenue',
-      value: '$12,847',
-      change: '+12.5%',
-      changeType: 'positive',
-      icon: DollarSign,
-      color: 'text-green-600'
-    },
-    {
-      title: 'Orders',
-      value: '247',
-      change: '+8.2%',
-      changeType: 'positive',
-      icon: ShoppingBag,
-      color: 'text-blue-600'
-    },
-    {
-      title: 'Customers',
-      value: '1,429',
-      change: '+15.3%',
-      changeType: 'positive',
-      icon: Users,
-      color: 'text-purple-600'
-    },
-    {
-      title: 'Page Views',
-      value: '8,942',
-      change: '-2.1%',
-      changeType: 'negative',
-      icon: Eye,
-      color: 'text-orange-600'
-    }
-  ];
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [metrics, setMetrics] = useState<Metric[]>([]);
+  const [salesData, setSalesData] = useState<SalesData[]>([]);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      setLoading(true);
+      setError(null);
+      const { data: analyticsData, error: functionError } = await supabase.functions.invoke('get-analytics-data');
+      
+      if (functionError || !analyticsData) {
+        console.error('Error fetching analytics:', functionError);
+        setError('Failed to load analytics data. This is expected if there are no orders or customers yet.');
+      } else {
+        const newMetrics: Metric[] = [
+          {
+            title: 'Revenue',
+            value: `$${analyticsData.revenue.value.toFixed(2)}`,
+            change: `${analyticsData.revenue.change.toFixed(1)}%`,
+            changeType: analyticsData.revenue.change >= 0 ? 'positive' : 'negative',
+            icon: DollarSign,
+            color: 'text-green-600'
+          },
+          {
+            title: 'Orders',
+            value: analyticsData.orders.value.toString(),
+            change: `${analyticsData.orders.change.toFixed(1)}%`,
+            changeType: analyticsData.orders.change >= 0 ? 'positive' : 'negative',
+            icon: ShoppingBag,
+            color: 'text-blue-600'
+          },
+          {
+            title: 'Customers',
+            value: analyticsData.customers.value.toString(),
+            change: `${analyticsData.customers.change.toFixed(1)}%`,
+            changeType: analyticsData.customers.change >= 0 ? 'positive' : 'negative',
+            icon: Users,
+            color: 'text-purple-600'
+          },
+          {
+            title: 'Page Views',
+            value: 'N/A',
+            change: '0%',
+            changeType: 'positive',
+            icon: Eye,
+            color: 'text-orange-600'
+          }
+        ];
+        setMetrics(newMetrics);
+        setSalesData(analyticsData.salesData);
+      }
+      setLoading(false);
+    };
+
+    fetchAnalytics();
+  }, []);
 
   const topPages = [
     { page: 'Homepage', views: 3247, percentage: 36.3 },
@@ -44,32 +83,23 @@ const Analytics = () => {
     { page: 'Contact', views: 813, percentage: 9.1 }
   ];
 
-  const trafficSources = [
-    { source: 'Organic Search', visitors: 4521, percentage: 45.2 },
-    { source: 'Direct', visitors: 2847, percentage: 28.5 },
-    { source: 'Social Media', visitors: 1634, percentage: 16.3 },
-    { source: 'Email', visitors: 723, percentage: 7.2 },
-    { source: 'Referral', visitors: 275, percentage: 2.8 }
-  ];
-
-  const salesData = [
-    { month: 'Jan', sales: 4200 },
-    { month: 'Feb', sales: 3800 },
-    { month: 'Mar', sales: 5200 },
-    { month: 'Apr', sales: 4900 },
-    { month: 'May', sales: 6100 },
-    { month: 'Jun', sales: 5800 }
-  ];
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="text-gray-600">Loading analytics...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
-        <p className="text-gray-600">Track your website performance and sales metrics</p>
+        <p className="text-gray-600">Displaying real-time sales and customer data</p>
       </div>
 
-      {/* Key Metrics */}
+      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">{error}</div>}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {metrics.map((metric, index) => (
           <div key={index} className="bg-white rounded-lg shadow-sm p-6">
@@ -91,36 +121,37 @@ const Analytics = () => {
               }`}>
                 {metric.change}
               </span>
-              <span className="text-sm text-gray-500 ml-2">vs last month</span>
+              <span className="text-sm text-gray-500 ml-2">vs last 30 days</span>
             </div>
           </div>
         ))}
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Sales Chart */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Trend</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Trend (Last 6 Months)</h3>
           <div className="space-y-4">
-            {salesData.map((data, index) => (
+            {salesData.length > 0 ? salesData.map((data, index) => (
               <div key={index} className="flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-600">{data.month}</span>
                 <div className="flex items-center space-x-3">
                   <div className="w-32 bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-sageGreen h-2 rounded-full" 
-                      style={{ width: `${(data.sales / 6100) * 100}%` }}
+                      style={{ width: `${(data.sales / Math.max(...salesData.map(s => s.sales), 1)) * 100}%` }}
                     ></div>
                   </div>
-                  <span className="text-sm font-medium text-gray-900">${data.sales}</span>
+                  <span className="text-sm font-medium text-gray-900">${data.sales.toFixed(2)}</span>
                 </div>
               </div>
-            ))}
+            )) : <p className="text-sm text-gray-500">No sales data yet.</p>}
           </div>
         </div>
 
-        {/* Top Pages */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm p-6 relative">
+          <div className="absolute inset-0 bg-gray-50/50 backdrop-blur-sm flex items-center justify-center z-10">
+            <p className="text-sm font-semibold text-gray-500">Requires Analytics Service</p>
+          </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Pages</h3>
           <div className="space-y-4">
             {topPages.map((page, index) => (
@@ -140,43 +171,6 @@ const Analytics = () => {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Traffic Sources */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Traffic Sources</h3>
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {trafficSources.map((source, index) => (
-            <div key={index} className="text-center p-4 border border-gray-200 rounded-lg">
-              <p className="text-2xl font-bold text-gray-900">{source.visitors}</p>
-              <p className="text-sm font-medium text-gray-600 mt-1">{source.source}</p>
-              <p className="text-xs text-gray-500">{source.percentage}%</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Conversion Funnel */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Conversion Funnel</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-            <span className="font-medium text-gray-900">Website Visitors</span>
-            <span className="text-xl font-bold text-blue-600">10,000</span>
-          </div>
-          <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
-            <span className="font-medium text-gray-900">Product Page Views</span>
-            <span className="text-xl font-bold text-yellow-600">3,990 (39.9%)</span>
-          </div>
-          <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
-            <span className="font-medium text-gray-900">Add to Cart</span>
-            <span className="text-xl font-bold text-orange-600">798 (8.0%)</span>
-          </div>
-          <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-            <span className="font-medium text-gray-900">Purchases</span>
-            <span className="text-xl font-bold text-green-600">247 (2.5%)</span>
           </div>
         </div>
       </div>
