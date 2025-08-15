@@ -79,7 +79,6 @@ const CheckoutPage = () => {
 
     if (profileError) {
       console.error('Error updating profile:', profileError);
-      // Non-critical, so we don't stop the order, but we won't refresh the profile state
     } else {
       await refreshProfile();
     }
@@ -126,6 +125,11 @@ const CheckoutPage = () => {
       setLoading(false);
       return;
     }
+
+    // 3. Send confirmation emails (fire and forget)
+    supabase.functions.invoke('send-order-confirmation', {
+      body: { orderId: orderData.id },
+    }).catch(console.error);
 
     await clearCart();
     navigate(`/order-confirmation/${orderData.id}`);
