@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, ReactNode } from 'react';
+import { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 
 interface Product {
   id: string;
@@ -89,10 +89,25 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, {
-    items: [],
-    coupon: null,
+  const [state, dispatch] = useReducer(cartReducer, { items: [], coupon: null }, (initialState) => {
+    try {
+      const storedCart = localStorage.getItem('breathin_cart');
+      if (storedCart) {
+        return JSON.parse(storedCart);
+      }
+    } catch (error) {
+      console.error("Failed to parse cart from localStorage", error);
+    }
+    return initialState;
   });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('breathin_cart', JSON.stringify(state));
+    } catch (error) {
+      console.error("Failed to save cart to localStorage", error);
+    }
+  }, [state]);
 
   const addToCart = (product: Product) => dispatch({ type: 'ADD_TO_CART', product });
   const removeFromCart = (productId: string) => dispatch({ type: 'REMOVE_FROM_CART', productId });
