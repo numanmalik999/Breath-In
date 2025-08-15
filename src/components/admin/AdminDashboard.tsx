@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  BarChart3, 
-  Users, 
-  ShoppingBag, 
-  DollarSign, 
-  TrendingUp, 
-  Package, 
-  Mail, 
-  Settings,
+import {
+  BarChart3,
+  Users,
+  ShoppingBag,
+  DollarSign,
+  TrendingUp,
+  Package,
+  Mail,
+  Settings as SettingsIcon, // Renamed to avoid conflict
   Eye,
   Edit,
   Trash2,
@@ -35,7 +35,7 @@ const AdminDashboard = () => {
     { id: 'orders', label: 'Orders', icon: ShoppingBag },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'analytics', label: 'Analytics', icon: TrendingUp },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'settings', label: 'Settings', icon: SettingsIcon }, // Using the renamed icon
   ];
 
   const renderContent = () => {
