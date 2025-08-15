@@ -127,7 +127,7 @@ const CheckoutPage = () => {
       return;
     }
 
-    clearCart();
+    await clearCart();
     navigate(`/order-confirmation/${orderData.id}`);
   };
 
