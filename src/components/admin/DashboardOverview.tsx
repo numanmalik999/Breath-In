@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   DollarSign, 
   ShoppingBag, 
@@ -11,10 +11,10 @@ import {
 } from 'lucide-react';
 
 const DashboardOverview = () => {
-  const stats = [
+  const initialStats = [
     {
       title: 'Total Revenue',
-      value: '$12,847',
+      value: 12847,
       change: '+12.5%',
       changeType: 'positive',
       icon: DollarSign,
@@ -22,7 +22,7 @@ const DashboardOverview = () => {
     },
     {
       title: 'Orders',
-      value: '247',
+      value: 247,
       change: '+8.2%',
       changeType: 'positive',
       icon: ShoppingBag,
@@ -30,7 +30,7 @@ const DashboardOverview = () => {
     },
     {
       title: 'Customers',
-      value: '1,429',
+      value: 1429,
       change: '+15.3%',
       changeType: 'positive',
       icon: Users,
@@ -38,13 +38,57 @@ const DashboardOverview = () => {
     },
     {
       title: 'Conversion Rate',
-      value: '3.2%',
+      value: 3.2,
       change: '-2.1%',
       changeType: 'negative',
       icon: TrendingUp,
       color: 'bg-orange-500'
     }
   ];
+
+  const [stats, setStats] = useState(initialStats);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStats(prevStats => prevStats.map(stat => {
+        let newValue = stat.value;
+        let newChange = stat.change;
+        let newChangeType = stat.changeType;
+
+        // Simulate random fluctuations
+        const fluctuation = Math.random() * 0.05; // up to 5% change
+        if (Math.random() > 0.5) {
+          newValue = stat.value * (1 + fluctuation);
+          newChange = `+${(fluctuation * 100).toFixed(1)}%`;
+          newChangeType = 'positive';
+        } else {
+          newValue = stat.value * (1 - fluctuation);
+          newChange = `-${(fluctuation * 100).toFixed(1)}%`;
+          newChangeType = 'negative';
+        }
+
+        // Format values based on type
+        let formattedValue;
+        if (stat.title === 'Total Revenue') {
+          formattedValue = `$${newValue.toFixed(0)}`;
+        } else if (stat.title === 'Conversion Rate') {
+          formattedValue = `${newValue.toFixed(1)}%`;
+        } else {
+          formattedValue = newValue.toFixed(0);
+        }
+
+        return {
+          ...stat,
+          value: newValue, // Keep raw value for calculation
+          displayValue: formattedValue, // Value for display
+          change: newChange,
+          changeType: newChangeType
+        };
+      }));
+    }, 5000); // Update every 5 seconds
+
+    return () => clearInterval(interval); // Clean up on unmount
+  }, []);
 
   const recentOrders = [
     { id: '#1247', customer: 'Sarah Mitchell', product: 'Starter Kit', amount: '$29.99', status: 'Completed' },
@@ -67,7 +111,7 @@ const DashboardOverview = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stat.displayValue}</p>
               </div>
               <div className={`${stat.color} p-3 rounded-lg`}>
                 <stat.icon className="h-6 w-6 text-white" />
