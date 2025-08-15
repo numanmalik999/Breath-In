@@ -25,51 +25,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getInitialSession = async () => {
+    // onAuthStateChange fires once on initialization, and then for every auth event.
+    // This is the single source of truth for the user's auth state.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
+          // If there's a user, fetch their profile.
           const { data: userProfile, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
           
-          if (error && error.code !== 'PGRST116') throw error;
-          setProfile(userProfile ?? null);
+          // We only want to log an error if it's not the expected "no rows found" error.
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching profile:', error);
+            setProfile(null);
+          } else {
+            setProfile(userProfile ?? null);
+          }
+        } else {
+          // If there's no session, clear the profile.
+          setProfile(null);
         }
       } catch (error) {
-        console.error("Error fetching initial session:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getInitialSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const { data: userProfile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        if (error && error.code !== 'PGRST116') {
-          console.error("Error fetching profile on auth change:", error);
-          setProfile(null);
-        } else {
-          setProfile(userProfile ?? null);
-        }
-      } else {
+        // Catch any unexpected errors during the process.
+        console.error('Error in onAuthStateChange handler:', error);
         setProfile(null);
+      } finally {
+        // This block is GUARANTEED to run, ensuring we never get stuck in a loading state.
+        setLoading(false);
       }
     });
 
+    // Cleanup the subscription when the component unmounts.
     return () => {
       subscription.unsubscribe();
     };
