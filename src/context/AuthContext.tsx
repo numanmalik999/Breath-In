@@ -25,9 +25,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // onAuthStateChange fires immediately with the current session.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const getInitialSession = async () => {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
 
@@ -38,22 +38,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .eq('id', session.user.id)
             .single();
           
-          // 'PGRST116' means no rows found, which is expected for new users.
-          // We only want to throw an error if it's something else.
-          if (error && error.code !== 'PGRST116') {
-            throw error;
-          }
-          
+          if (error && error.code !== 'PGRST116') throw error;
           setProfile(userProfile ?? null);
-        } else {
-          setProfile(null);
         }
       } catch (error) {
-        console.error('Error handling auth state change:', error);
-        setProfile(null);
+        console.error("Error fetching initial session:", error);
       } finally {
-        // This block is guaranteed to run, resolving the infinite loading issue.
         setLoading(false);
+      }
+    };
+
+    getInitialSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        const { data: userProfile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        if (error && error.code !== 'PGRST116') {
+          console.error("Error fetching profile on auth change:", error);
+          setProfile(null);
+        } else {
+          setProfile(userProfile ?? null);
+        }
+      } else {
+        setProfile(null);
       }
     });
 
