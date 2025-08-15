@@ -4,7 +4,7 @@ import { Search, Truck, Loader2 } from 'lucide-react';
 
 const courierTrackingUrls: { [key: string]: string } = {
   'TCS': 'https://www.tcsexpress.com/tracking?cn=',
-  'Leopards': 'https://leopardscourier.com/shipment_tracking?cn_number=',
+  'Leopards': 'https://leopardscourier.com/shipment_tracking_view?cn_number=',
   'M&P': 'https://mulphilog.com/tracking?tracking_id=',
 };
 
