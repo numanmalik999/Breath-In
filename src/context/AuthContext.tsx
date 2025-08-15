@@ -25,38 +25,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // onAuthStateChange is the single source of truth.
-    // It fires once on initialization and then for every auth event.
+    // This function handles the initial session check.
+    const initializeSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          const { data: userProfile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          if (error && error.code !== 'PGRST116') throw error;
+          setProfile(userProfile ?? null);
+        } else {
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error("Error during session initialization:", error);
+        setProfile(null); // Clear profile on error
+      } finally {
+        // This is crucial: setLoading(false) is called regardless of success or failure.
+        setLoading(false);
+      }
+    };
+
+    initializeSession();
+
+    // This listener handles subsequent auth changes (SIGN_IN, SIGN_OUT, etc.).
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser) {
-        // If there's a user, fetch their profile.
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
         const { data: userProfile, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', currentUser.id)
+          .eq('id', session.user.id)
           .single();
-        
-        if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is not a critical error.
-          console.error('Error fetching profile:', error);
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching profile on auth change:', error);
           setProfile(null);
         } else {
           setProfile(userProfile ?? null);
         }
       } else {
-        // If there's no session, clear the profile.
         setProfile(null);
       }
-      
-      // The listener has fired, so we are no longer in an initial loading state.
-      // This is the critical part that was failing.
-      setLoading(false);
     });
 
-    // Cleanup the subscription when the component unmounts.
     return () => {
       subscription.unsubscribe();
     };
@@ -74,7 +93,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  // Do not render children until the initial loading is complete.
+  // This prevents rendering protected routes with an incorrect auth state.
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
