@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Eye, Star, Package } from 'lucide-react';
-import { products as initialProducts, Product } from '../../data/products';
+import { getProducts, Product } from '../../data/products';
 import AddProductModal from './AddProductModal';
 
 const ProductManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [productList, setProductList] = useState<Product[]>(initialProducts);
+  const [productList, setProductList] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const products = await getProducts();
+      setProductList(products);
+    };
+    fetchProducts();
+  }, []);
 
   const handleAddProduct = (newProduct: Product) => {
+    // Note: This only adds to local state. A database call would be needed for persistence.
     setProductList([newProduct, ...productList]);
     setShowAddModal(false);
   };
@@ -157,7 +166,7 @@ const ProductManagement = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Avg Rating</p>
               <p className="text-2xl font-bold text-gray-900">
-                {(productList.reduce((acc, p) => acc + p.rating, 0) / productList.length).toFixed(1)}
+                {productList.length > 0 ? (productList.reduce((acc, p) => acc + p.rating, 0) / productList.length).toFixed(1) : 0}
               </p>
             </div>
           </div>

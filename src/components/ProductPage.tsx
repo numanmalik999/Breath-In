@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Star, ShoppingCart, Heart, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { getProductById, products } from '../data/products';
+import { getProductById, getProducts } from '../data/products';
+import type { Product } from '../data/products';
 import { useCart } from '../context/CartContext';
 
 const ProductPage = () => {
@@ -10,8 +11,60 @@ const ProductPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const product = productId ? getProductById(productId) : null;
+  useEffect(() => {
+    const fetchProductData = async () => {
+      if (!productId) {
+        setLoading(false);
+        return;
+      };
+      setLoading(true);
+      window.scrollTo(0, 0); // Scroll to top on new product load
+      const fetchedProduct = await getProductById(productId);
+      setProduct(fetchedProduct);
+      
+      if (fetchedProduct) {
+        const allProducts = await getProducts();
+        setRelatedProducts(allProducts.filter(p => p.id !== fetchedProduct.id));
+      }
+      
+      setLoading(false);
+    };
+    fetchProductData();
+  }, [productId]);
+
+  const nextImage = () => {
+    if (!product) return;
+    setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+  };
+
+  const prevImage = () => {
+    if (!product) return;
+    setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+  };
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    for (let i = 0; i < quantity; i++) {
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images[0]
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg text-gray-600">Loading product...</p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -25,25 +78,6 @@ const ProductPage = () => {
       </div>
     );
   }
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
-  };
-
-  const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.images[0]
-      });
-    }
-  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -270,7 +304,7 @@ const ProductPage = () => {
           You Might Also Like
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {products.filter(p => p.id !== product.id).map((relatedProduct) => (
+          {relatedProducts.map((relatedProduct) => (
             <Link
               key={relatedProduct.id}
               to={`/product/${relatedProduct.id}`}
