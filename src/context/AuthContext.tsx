@@ -25,36 +25,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchInitialSession = async () => {
-      try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
-        setSession(initialSession);
-        const currentUser = initialSession?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          const { data: userProfile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .single();
-          if (error && error.code !== 'PGRST116') throw error;
-          setProfile(userProfile ?? null);
-        } else {
-          setProfile(null);
-        }
-      } catch (error) {
-        console.error("Error fetching initial session:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInitialSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
-      setSession(newSession);
-      const currentUser = newSession?.user ?? null;
+    // onAuthStateChange is the single source of truth.
+    // It fires once on initialization and then for every auth event.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setSession(session);
+      const currentUser = session?.user ?? null;
       setUser(currentUser);
 
       if (currentUser) {
@@ -63,8 +38,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .select('*')
           .eq('id', currentUser.id)
           .single();
+        
         if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching profile on auth change:', error);
+          console.error('Error fetching profile:', error);
           setProfile(null);
         } else {
           setProfile(userProfile ?? null);
@@ -72,8 +48,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setProfile(null);
       }
+      
+      // The listener has fired, so we are no longer in an initial loading state.
+      setLoading(false);
     });
 
+    // Cleanup the subscription when the component unmounts.
     return () => {
       subscription.unsubscribe();
     };
@@ -91,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
   };
 
+  // Display a loading indicator while the initial auth state is being determined.
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-warmBeige">
