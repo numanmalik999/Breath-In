@@ -1,5 +1,6 @@
-import { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useReducer, ReactNode, useEffect, useState, useRef } from 'react';
 import { supabase } from '../integrations/supabase/client';
+import { useAuth } from './AuthContext';
 
 interface Product {
   id: string;
@@ -25,6 +26,7 @@ interface CartState {
 
 interface CartContextType {
   state: CartState;
+  loading: boolean;
   addToCart: (product: Product) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -43,6 +45,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 type CartAction = 
+  | { type: 'SET_CART'; items: Product[] }
   | { type: 'ADD_TO_CART'; product: Product }
   | { type: 'REMOVE_FROM_CART'; productId: string }
   | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number }
@@ -51,11 +54,12 @@ type CartAction =
   | { type: 'REMOVE_COUPON' }
   | { type: 'OPEN_CART' }
   | { type: 'CLOSE_CART' }
-  | { type: 'SET_SHIPPING'; province: string; cost: number }
-  | { type: 'SYNC_PRICES'; products: { id: string; price: number }[] };
+  | { type: 'SET_SHIPPING'; province: string; cost: number };
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
+    case 'SET_CART':
+      return { ...state, items: action.items };
     case 'ADD_TO_CART':
       const existingItem = state.items.find(item => item.id === action.product.id);
       if (existingItem) {
@@ -100,91 +104,171 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, isCartOpen: false };
     case 'SET_SHIPPING':
       return { ...state, shippingProvince: action.province, shippingCost: action.cost };
-    case 'SYNC_PRICES':
-      return {
-        ...state,
-        items: state.items.map(item => {
-          const updatedProduct = action.products.find(p => p.id === item.id);
-          if (updatedProduct && item.price !== updatedProduct.price) {
-            return { ...item, price: updatedProduct.price };
-          }
-          return item;
-        }),
-      };
     default:
       return state;
   }
 }
 
+const GUEST_CART_KEY = 'breathin_guest_cart';
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, { items: [], coupon: null, isCartOpen: false, shippingProvince: '', shippingCost: 0 }, (initialState) => {
-    try {
-      const storedCart = localStorage.getItem('breathin_cart');
-      if (storedCart) {
-        const parsed = JSON.parse(storedCart);
-        return { ...parsed, isCartOpen: false, shippingProvince: '', shippingCost: 0 };
-      }
-    } catch (error) {
-      console.error("Failed to parse cart from localStorage", error);
-    }
-    return initialState;
-  });
+  const { user, loading: authLoading } = useAuth();
+  const [state, dispatch] = useReducer(cartReducer, { items: [], coupon: null, isCartOpen: false, shippingProvince: '', shippingCost: 0 });
+  const [loading, setLoading] = useState(true);
+  const previousUserId = useRef(user?.id);
 
-  // Sync prices with the database on initial load
-  useEffect(() => {
-    const syncCartPrices = async () => {
-      if (state.items.length === 0) return;
-
-      const productIds = state.items.map(item => item.id);
-      const { data: products, error } = await supabase
-        .from('products')
-        .select('id, price')
-        .in('id', productIds);
+  // Load cart from DB for logged-in users, or from localStorage for guests
+  const loadCart = async () => {
+    setLoading(true);
+    if (user) {
+      const { data, error } = await supabase
+        .from('user_carts')
+        .select('quantity, products(*)')
+        .eq('user_id', user.id);
 
       if (error) {
-        console.error('Error syncing cart prices:', error);
+        console.error('Error fetching user cart:', error);
+      } else {
+        const cartItems = data.map((item: any) => ({
+          id: item.products.id,
+          name: item.products.name,
+          price: item.products.price,
+          image: item.products.images[0],
+          quantity: item.quantity,
+        }));
+        dispatch({ type: 'SET_CART', items: cartItems });
+      }
+    } else {
+      try {
+        const storedCart = localStorage.getItem(GUEST_CART_KEY);
+        if (storedCart) {
+          dispatch({ type: 'SET_CART', items: JSON.parse(storedCart) });
+        } else {
+          dispatch({ type: 'SET_CART', items: [] });
+        }
+      } catch (error) {
+        console.error("Failed to parse guest cart from localStorage", error);
+        dispatch({ type: 'SET_CART', items: [] });
+      }
+    }
+    setLoading(false);
+  };
+
+  // Effect to handle user logging in/out and merging carts
+  useEffect(() => {
+    const handleAuthChange = async () => {
+      const currentUserId = user?.id;
+      // User logged in
+      if (currentUserId && !previousUserId.current) {
+        setLoading(true);
+        const guestCart = JSON.parse(localStorage.getItem(GUEST_CART_KEY) || '[]');
+        if (guestCart.length > 0) {
+          const itemsToUpsert = guestCart.map((item: Product) => ({
+            user_id: currentUserId,
+            product_id: item.id,
+            quantity: item.quantity || 1,
+          }));
+          await supabase.from('user_carts').upsert(itemsToUpsert, { onConflict: 'user_id,product_id' });
+          localStorage.removeItem(GUEST_CART_KEY);
+        }
+        await loadCart();
+      } 
+      // User logged out
+      else if (!currentUserId && previousUserId.current) {
+        dispatch({ type: 'CLEAR_CART' });
+      }
+      previousUserId.current = currentUserId;
+    };
+
+    if (!authLoading) {
+      handleAuthChange();
+    }
+  }, [user, authLoading]);
+
+  // Initial cart load
+  useEffect(() => {
+    if (!authLoading) {
+      loadCart();
+    }
+  }, [authLoading]);
+
+  // Save guest cart to localStorage
+  useEffect(() => {
+    if (!user && !authLoading) {
+      try {
+        localStorage.setItem(GUEST_CART_KEY, JSON.stringify(state.items));
+      } catch (error) {
+        console.error("Failed to save guest cart to localStorage", error);
+      }
+    }
+  }, [state.items, user, authLoading]);
+
+  const addToCart = async (product: Product) => {
+    if (user) {
+      const { data: existingItem, error: fetchError } = await supabase
+        .from('user_carts')
+        .select('quantity')
+        .eq('user_id', user.id)
+        .eq('product_id', product.id)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') { // Ignore 'not found' error
+        console.error('Error checking cart item:', fetchError);
         return;
       }
 
-      if (products) {
-        const hasChanged = state.items.some(item => {
-          const dbProduct = products.find(p => p.id === item.id);
-          return dbProduct && dbProduct.price !== item.price;
-        });
-
-        if (hasChanged) {
-          dispatch({ type: 'SYNC_PRICES', products });
-        }
-      }
-    };
-
-    syncCartPrices();
-  }, []); // Runs once on initial load
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('breathin_cart', JSON.stringify({ ...state, isCartOpen: false }));
-    } catch (error) {
-      console.error("Failed to save cart to localStorage", error);
+      const { error } = await supabase.from('user_carts').upsert({
+        user_id: user.id,
+        product_id: product.id,
+        quantity: (existingItem?.quantity || 0) + 1,
+      });
+      if (!error) await loadCart();
+    } else {
+      dispatch({ type: 'ADD_TO_CART', product });
     }
-  }, [state]);
-
-  const getCartTotal = () => {
-    return state.items.reduce((total, item) => total + item.price * (item.quantity || 1), 0);
   };
 
+  const updateQuantity = async (productId: string, quantity: number) => {
+    if (user) {
+      if (quantity > 0) {
+        const { error } = await supabase.from('user_carts').update({ quantity }).match({ user_id: user.id, product_id: productId });
+        if (!error) await loadCart();
+      } else {
+        await removeFromCart(productId);
+      }
+    } else {
+      dispatch({ type: 'UPDATE_QUANTITY', productId, quantity });
+    }
+  };
+
+  const removeFromCart = async (productId: string) => {
+    if (user) {
+      const { error } = await supabase.from('user_carts').delete().match({ user_id: user.id, product_id: productId });
+      if (!error) await loadCart();
+    } else {
+      dispatch({ type: 'REMOVE_FROM_CART', productId });
+    }
+  };
+
+  const clearCart = async () => {
+    if (user) {
+      const { error } = await supabase.from('user_carts').delete().eq('user_id', user.id);
+      if (!error) await loadCart();
+    } else {
+      dispatch({ type: 'CLEAR_CART' });
+    }
+  };
+
+  const getCartTotal = () => state.items.reduce((total, item) => total + item.price * (item.quantity || 1), 0);
+  const getCartCount = () => state.items.reduce((count, item) => count + (item.quantity || 1), 0);
   const getDiscount = () => {
     const subtotal = getCartTotal();
     if (!state.coupon || subtotal === 0) return 0;
-    let discount = 0;
-    if (state.coupon.discount_type === 'percentage') {
-      discount = subtotal * (state.coupon.discount_value / 100);
-    } else if (state.coupon.discount_type === 'fixed') {
-      discount = state.coupon.discount_value;
-    }
+    let discount = state.coupon.discount_type === 'percentage'
+      ? subtotal * (state.coupon.discount_value / 100)
+      : state.coupon.discount_value;
     return Math.min(discount, subtotal);
   };
-
   const setShippingProvince = (province: string) => {
     const subtotalAfterDiscount = getCartTotal() - getDiscount();
     let cost = 0;
@@ -193,40 +277,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
     dispatch({ type: 'SET_SHIPPING', province, cost });
   };
-
-  const addToCart = (product: Product) => dispatch({ type: 'ADD_TO_CART', product });
-  const removeFromCart = (productId: string) => dispatch({ type: 'REMOVE_FROM_CART', productId });
-  const updateQuantity = (productId: string, quantity: number) => dispatch({ type: 'UPDATE_QUANTITY', productId, quantity });
-  const clearCart = () => dispatch({ type: 'CLEAR_CART' });
+  const getFinalTotal = () => getCartTotal() - getDiscount() + state.shippingCost;
   const applyCoupon = (coupon: Coupon) => dispatch({ type: 'APPLY_COUPON', coupon });
   const removeCoupon = () => dispatch({ type: 'REMOVE_COUPON' });
   const openCart = () => dispatch({ type: 'OPEN_CART' });
   const closeCart = () => dispatch({ type: 'CLOSE_CART' });
 
-  const getCartCount = () => {
-    return state.items.reduce((count, item) => count + (item.quantity || 1), 0);
-  };
-
-  const getFinalTotal = () => {
-    return getCartTotal() - getDiscount() + state.shippingCost;
-  };
-
   return (
     <CartContext.Provider value={{
-      state,
-      addToCart,
-      removeFromCart,
-      updateQuantity,
-      clearCart,
-      getCartTotal,
-      getCartCount,
-      applyCoupon,
-      removeCoupon,
-      getDiscount,
-      getFinalTotal,
-      openCart,
-      closeCart,
-      setShippingProvince,
+      state, loading, addToCart, removeFromCart, updateQuantity, clearCart, getCartTotal,
+      getCartCount, applyCoupon, removeCoupon, getDiscount, getFinalTotal, openCart, closeCart, setShippingProvince,
     }}>
       {children}
     </CartContext.Provider>
