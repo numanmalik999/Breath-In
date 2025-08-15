@@ -3,104 +3,57 @@ import {
   DollarSign, 
   ShoppingBag, 
   Users, 
-  TrendingUp, 
   Package, 
   Star,
   AlertCircle,
-  Eye
+  Eye,
+  CheckCircle
 } from 'lucide-react';
+import { supabase } from '../../integrations/supabase/client';
+import { Product, mapProductData } from '../../data/products';
+
+interface StatCard {
+  title: string;
+  value: string;
+  icon: React.ElementType;
+  color: string;
+  note?: string;
+}
 
 const DashboardOverview = () => {
-  const initialStats = [
-    {
-      title: 'Total Revenue',
-      value: 12847,
-      change: '+12.5%',
-      changeType: 'positive',
-      icon: DollarSign,
-      color: 'bg-green-500'
-    },
-    {
-      title: 'Orders',
-      value: 247,
-      change: '+8.2%',
-      changeType: 'positive',
-      icon: ShoppingBag,
-      color: 'bg-blue-500'
-    },
-    {
-      title: 'Customers',
-      value: 1429,
-      change: '+15.3%',
-      changeType: 'positive',
-      icon: Users,
-      color: 'bg-purple-500'
-    },
-    {
-      title: 'Conversion Rate',
-      value: 3.2,
-      change: '-2.1%',
-      changeType: 'negative',
-      icon: TrendingUp,
-      color: 'bg-orange-500'
-    }
-  ];
-
-  const [stats, setStats] = useState(initialStats);
+  const [stats, setStats] = useState<StatCard[]>([]);
+  const [topProducts, setTopProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setStats(prevStats => prevStats.map(stat => {
-        let newValue = stat.value;
-        let newChange = stat.change;
-        let newChangeType = stat.changeType;
+    const fetchDashboardData = async () => {
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('*');
 
-        // Simulate random fluctuations
-        const fluctuation = Math.random() * 0.05; // up to 5% change
-        if (Math.random() > 0.5) {
-          newValue = stat.value * (1 + fluctuation);
-          newChange = `+${(fluctuation * 100).toFixed(1)}%`;
-          newChangeType = 'positive';
-        } else {
-          newValue = stat.value * (1 - fluctuation);
-          newChange = `-${(fluctuation * 100).toFixed(1)}%`;
-          newChangeType = 'negative';
-        }
+      if (error || !products) {
+        console.error("Error fetching dashboard data", error);
+        return;
+      }
 
-        // Format values based on type
-        let formattedValue;
-        if (stat.title === 'Total Revenue') {
-          formattedValue = `$${newValue.toFixed(0)}`;
-        } else if (stat.title === 'Conversion Rate') {
-          formattedValue = `${newValue.toFixed(1)}%`;
-        } else {
-          formattedValue = newValue.toFixed(0);
-        }
+      const totalProducts = products.length;
+      const productsInStock = products.filter(p => p.in_stock).length;
+      const totalReviews = products.reduce((acc, p) => acc + (p.review_count || 0), 0);
 
-        return {
-          ...stat,
-          value: newValue, // Keep raw value for calculation
-          displayValue: formattedValue, // Value for display
-          change: newChange,
-          changeType: newChangeType
-        };
-      }));
-    }, 5000); // Update every 5 seconds
+      const newStats: StatCard[] = [
+        { title: 'Total Products', value: totalProducts.toString(), icon: Package, color: 'bg-blue-500' },
+        { title: 'Products In Stock', value: productsInStock.toString(), icon: CheckCircle, color: 'bg-green-500' },
+        { title: 'Total Reviews', value: totalReviews.toString(), icon: Star, color: 'bg-yellow-500' },
+        { title: 'Revenue / Orders', value: 'N/A', icon: DollarSign, color: 'bg-gray-400', note: 'Requires orders table' },
+      ];
+      setStats(newStats);
 
-    return () => clearInterval(interval); // Clean up on unmount
+      // Sort products by rating to get top products
+      const sortedProducts = [...products].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      setTopProducts(sortedProducts.slice(0, 4).map(mapProductData));
+    };
+
+    fetchDashboardData();
   }, []);
-
-  const recentOrders = [
-    { id: '#1247', customer: 'Sarah Mitchell', product: 'Starter Kit', amount: '$29.99', status: 'Completed' },
-    { id: '#1246', customer: 'David Chen', product: 'Refills', amount: '$19.99', status: 'Processing' },
-    { id: '#1245', customer: 'Emma Rodriguez', product: 'Starter Kit', amount: '$29.99', status: 'Shipped' },
-    { id: '#1244', customer: 'Michael Thompson', product: 'Refills', amount: '$19.99', status: 'Completed' },
-  ];
-
-  const topProducts = [
-    { name: 'Breathin Starter Kit', sales: 156, revenue: '$4,674', growth: '+18%' },
-    { name: 'Breathin Refills', sales: 91, revenue: '$1,819', growth: '+12%' },
-  ];
 
   return (
     <div className="space-y-6">
@@ -111,83 +64,40 @@ const DashboardOverview = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stat.displayValue}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
               </div>
               <div className={`${stat.color} p-3 rounded-lg`}>
                 <stat.icon className="h-6 w-6 text-white" />
               </div>
             </div>
-            <div className="mt-4 flex items-center">
-              <span className={`text-sm font-medium ${
-                stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {stat.change}
-              </span>
-              <span className="text-sm text-gray-500 ml-2">vs last month</span>
-            </div>
+            {stat.note && (
+              <p className="text-xs text-gray-400 mt-4">{stat.note}</p>
+            )}
           </div>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Recent Orders */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
-              <button className="text-sageGreen hover:text-opacity-80 text-sm font-medium">
-                View All
-              </button>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3">
-                      <div>
-                        <p className="font-medium text-gray-900">{order.id}</p>
-                        <p className="text-sm text-gray-600">{order.customer}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-gray-900">{order.amount}</p>
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      order.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                      order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-blue-100 text-blue-800'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* Top Rated Products */}
+      <div className="bg-white rounded-lg shadow-sm">
+        <div className="p-6 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">Top Rated Products</h3>
         </div>
-
-        {/* Top Products */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Top Products</h3>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {topProducts.map((product, index) => (
-                <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">{product.name}</p>
-                    <p className="text-sm text-gray-600">{product.sales} sales</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-gray-900">{product.revenue}</p>
-                    <span className="text-sm text-green-600 font-medium">{product.growth}</span>
-                  </div>
+        <div className="p-6">
+          <div className="space-y-4">
+            {topProducts.length > 0 ? topProducts.map((product) => (
+              <div key={product.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900">{product.name}</p>
+                  <p className="text-sm text-gray-600">{product.reviewCount} reviews</p>
                 </div>
-              ))}
-            </div>
+                <div className="text-right flex items-center space-x-1">
+                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                  <span className="font-medium text-gray-900">{product.rating}</span>
+                </div>
+              </div>
+            )) : (
+              <p className="text-gray-500">No products found.</p>
+            )}
           </div>
         </div>
       </div>

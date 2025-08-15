@@ -2,24 +2,51 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Eye, Star, Package } from 'lucide-react';
 import { getProducts, Product } from '../../data/products';
 import AddProductModal from './AddProductModal';
+import { supabase } from '../../integrations/supabase/client';
+
+type NewProductData = Omit<Product, 'id' | 'rating' | 'reviewCount'>;
 
 const ProductManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [productList, setProductList] = useState<Product[]>([]);
 
+  const fetchProducts = async () => {
+    const products = await getProducts();
+    setProductList(products);
+  };
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      const products = await getProducts();
-      setProductList(products);
-    };
     fetchProducts();
   }, []);
 
-  const handleAddProduct = (newProduct: Product) => {
-    // Note: This only adds to local state. A database call would be needed for persistence.
-    setProductList([newProduct, ...productList]);
-    setShowAddModal(false);
+  const handleAddProduct = async (productData: NewProductData) => {
+    const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+
+    const { error } = await supabase
+      .from('products')
+      .insert([{
+        slug: slug,
+        name: productData.name,
+        price: productData.price,
+        original_price: productData.originalPrice,
+        images: productData.images,
+        short_description: productData.shortDescription,
+        description: productData.description,
+        features: productData.features,
+        specifications: productData.specifications,
+        in_stock: productData.inStock,
+        rating: 0,
+        review_count: 0,
+      }]);
+
+    if (error) {
+      console.error('Error adding product:', error);
+      // In a real app, you would show a user-facing error message.
+    } else {
+      await fetchProducts(); // Refetch the list to include the new product
+      setShowAddModal(false);
+    }
   };
 
   const filteredProducts = productList.filter(product =>

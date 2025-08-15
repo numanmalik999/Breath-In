@@ -2,25 +2,25 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Product } from '../../data/products';
 
+// Define the type for the data needed to create a new product
+type NewProductData = Omit<Product, 'id' | 'rating' | 'reviewCount'>;
+
 interface AddProductModalProps {
   onClose: () => void;
-  onAddProduct: (product: Product) => void;
+  onAddProduct: (product: NewProductData) => void;
 }
 
 const AddProductModal: React.FC<AddProductModalProps> = ({ onClose, onAddProduct }) => {
   const [newProduct, setNewProduct] = useState({
-    id: `new-product-${Date.now()}`,
     name: '',
     price: 0,
     originalPrice: 0,
     images: ['https://images.pexels.com/photos/6975474/pexels-photo-6975474.jpeg'], // Placeholder image
     shortDescription: '',
     description: '',
-    features: [],
+    features: [] as string[],
     specifications: {},
     inStock: true,
-    rating: 0,
-    reviewCount: 0,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -79,7 +79,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ onClose, onAddProduct
               <input
                 type="number"
                 name="originalPrice"
-                value={newProduct.originalPrice}
+                value={newProduct.originalPrice || ''}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
               />
