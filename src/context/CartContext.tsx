@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
+import { supabase } from '../integrations/supabase/client';
 
 interface Product {
   id: string;
@@ -50,7 +51,8 @@ type CartAction =
   | { type: 'REMOVE_COUPON' }
   | { type: 'OPEN_CART' }
   | { type: 'CLOSE_CART' }
-  | { type: 'SET_SHIPPING'; province: string; cost: number };
+  | { type: 'SET_SHIPPING'; province: string; cost: number }
+  | { type: 'SYNC_PRICES'; products: { id: string; price: number }[] };
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
@@ -98,6 +100,17 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, isCartOpen: false };
     case 'SET_SHIPPING':
       return { ...state, shippingProvince: action.province, shippingCost: action.cost };
+    case 'SYNC_PRICES':
+      return {
+        ...state,
+        items: state.items.map(item => {
+          const updatedProduct = action.products.find(p => p.id === item.id);
+          if (updatedProduct && item.price !== updatedProduct.price) {
+            return { ...item, price: updatedProduct.price };
+          }
+          return item;
+        }),
+      };
     default:
       return state;
   }
@@ -116,6 +129,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
     return initialState;
   });
+
+  // Sync prices with the database on initial load
+  useEffect(() => {
+    const syncCartPrices = async () => {
+      if (state.items.length === 0) return;
+
+      const productIds = state.items.map(item => item.id);
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('id, price')
+        .in('id', productIds);
+
+      if (error) {
+        console.error('Error syncing cart prices:', error);
+        return;
+      }
+
+      if (products) {
+        const hasChanged = state.items.some(item => {
+          const dbProduct = products.find(p => p.id === item.id);
+          return dbProduct && dbProduct.price !== item.price;
+        });
+
+        if (hasChanged) {
+          dispatch({ type: 'SYNC_PRICES', products });
+        }
+      }
+    };
+
+    syncCartPrices();
+  }, []); // Runs once on initial load
 
   useEffect(() => {
     try {
