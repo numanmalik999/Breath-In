@@ -26,15 +26,15 @@ const Header = () => {
               <Link to="/shop" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 Shop
               </Link>
-              <a href="#" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
+              <Link to="/about" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 About
-              </a>
+              </Link>
               <a href="#" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 Blog
               </a>
-              <a href="#" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
+              <Link to="/contact" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 Contact
-              </a>
+              </Link>
               <Link to="/admin" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 Admin
               </Link>
