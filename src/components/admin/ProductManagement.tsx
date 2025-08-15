@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import { Plus, Search, Edit, Trash2, Eye, Star, Package } from 'lucide-react';
-import { products } from '../../data/products';
+import { products as initialProducts, Product } from '../../data/products';
+import AddProductModal from './AddProductModal';
 
 const ProductManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [productList, setProductList] = useState<Product[]>(initialProducts);
 
-  const filteredProducts = products.filter(product =>
+  const handleAddProduct = (newProduct: Product) => {
+    setProductList([newProduct, ...productList]);
+    setShowAddModal(false);
+  };
+
+  const filteredProducts = productList.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -140,7 +147,7 @@ const ProductManagement = () => {
             <Package className="h-8 w-8 text-sageGreen" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Products</p>
-              <p className="text-2xl font-bold text-gray-900">{products.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{productList.length}</p>
             </div>
           </div>
         </div>
@@ -150,7 +157,7 @@ const ProductManagement = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Avg Rating</p>
               <p className="text-2xl font-bold text-gray-900">
-                {(products.reduce((acc, p) => acc + p.rating, 0) / products.length).toFixed(1)}
+                {(productList.reduce((acc, p) => acc + p.rating, 0) / productList.length).toFixed(1)}
               </p>
             </div>
           </div>
@@ -161,12 +168,20 @@ const ProductManagement = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Reviews</p>
               <p className="text-2xl font-bold text-gray-900">
-                {products.reduce((acc, p) => acc + p.reviewCount, 0)}
+                {productList.reduce((acc, p) => acc + p.reviewCount, 0)}
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Add Product Modal */}
+      {showAddModal && (
+        <AddProductModal 
+          onClose={() => setShowAddModal(false)} 
+          onAddProduct={handleAddProduct} 
+        />
+      )}
     </div>
   );
 };
