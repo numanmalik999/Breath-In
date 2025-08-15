@@ -13,10 +13,19 @@ const provinces = [
 
 const CheckoutPage = () => {
   const { state, getCartTotal, getDiscount, getFinalTotal, clearCart, setShippingProvince } = useCart();
-  const { session, loading: authLoading } = useAuth();
+  const { session, profile, refreshProfile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [selectedProvince, setSelectedProvince] = useState('');
+  const [shippingInfo, setShippingInfo] = useState({
+    firstName: '',
+    lastName: '',
+    phoneNumber: '',
+    address: '',
+    apartment: '',
+    city: '',
+    postalCode: '',
+  });
 
   useEffect(() => {
     if (!authLoading && !session) {
@@ -28,19 +37,54 @@ const CheckoutPage = () => {
   }, [session, authLoading, state.items, navigate]);
 
   useEffect(() => {
+    if (profile) {
+      setShippingInfo(prev => ({
+        ...prev,
+        firstName: profile.first_name || '',
+        lastName: profile.last_name || '',
+        phoneNumber: profile.phone_number || '',
+      }));
+    }
+  }, [profile]);
+
+  useEffect(() => {
     if (selectedProvince) {
       setShippingProvince(selectedProvince);
     }
   }, [selectedProvince, state.items, state.coupon, setShippingProvince]);
 
+  const handleShippingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setShippingInfo(prev => ({ ...prev, [name]: value }));
+  };
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session?.user || state.items.length === 0 || !selectedProvince) {
-      alert('Please select a province to calculate shipping.');
+      alert('Please fill out all required fields and select a province.');
       return;
     }
 
     setLoading(true);
+
+    // 1. Update user profile with shipping info
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        first_name: shippingInfo.firstName,
+        last_name: shippingInfo.lastName,
+        phone_number: shippingInfo.phoneNumber,
+      })
+      .eq('id', session.user.id);
+
+    if (profileError) {
+      console.error('Error updating profile:', profileError);
+      // Non-critical, so we don't stop the order, but we won't refresh the profile state
+    } else {
+      await refreshProfile();
+    }
+
+    // 2. Create the order
     const subtotal = getCartTotal();
     const discount = getDiscount();
     const shippingCost = state.shippingCost;
@@ -106,17 +150,18 @@ const CheckoutPage = () => {
               <h2 className="text-xl font-semibold mb-2">Shipping address</h2>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <input type="text" placeholder="First name" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-                  <input type="text" placeholder="Last name" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                  <input type="text" name="firstName" value={shippingInfo.firstName} onChange={handleShippingChange} placeholder="First name" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                  <input type="text" name="lastName" value={shippingInfo.lastName} onChange={handleShippingChange} placeholder="Last name" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
                 </div>
-                <input type="text" placeholder="Street address" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-                <input type="text" placeholder="Apartment, suite, etc. (optional)" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-                <input type="text" placeholder="Town / City" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                <input type="tel" name="phoneNumber" value={shippingInfo.phoneNumber} onChange={handleShippingChange} placeholder="Phone number" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                <input type="text" name="address" value={shippingInfo.address} onChange={handleShippingChange} placeholder="Street address" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                <input type="text" name="apartment" value={shippingInfo.apartment} onChange={handleShippingChange} placeholder="Apartment, suite, etc. (optional)" className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                <input type="text" name="city" value={shippingInfo.city} onChange={handleShippingChange} placeholder="Town / City" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
                 <select value={selectedProvince} onChange={(e) => setSelectedProvince(e.target.value)} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
                   <option value="" disabled>Select Province</option>
                   {provinces.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
-                <input type="text" placeholder="Postcode / ZIP" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                <input type="text" name="postalCode" value={shippingInfo.postalCode} onChange={handleShippingChange} placeholder="Postcode / ZIP" required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
               </div>
             </section>
             
