@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { X, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
 
 const CartSlider = () => {
   const { state, closeCart, updateQuantity, removeFromCart, getCartTotal } = useCart();
@@ -52,7 +53,7 @@ const CartSlider = () => {
                   <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-lg" />
                   <div className="flex-1">
                     <h3 className="font-semibold text-charcoal">{item.name}</h3>
-                    <p className="text-sm text-gray-500">${item.price.toFixed(2)}</p>
+                    <p className="text-sm text-gray-500">{formatCurrency(item.price)}</p>
                     <div className="flex items-center mt-2">
                       <div className="flex items-center border border-gray-200 rounded">
                         <button onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)} className="px-2 py-1 hover:bg-gray-100"><Minus className="h-3 w-3" /></button>
@@ -62,7 +63,7 @@ const CartSlider = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold">${(item.price * (item.quantity || 1)).toFixed(2)}</p>
+                    <p className="font-semibold">{formatCurrency(item.price * (item.quantity || 1))}</p>
                     <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-500 text-xs mt-2">
                       Remove
                     </button>
@@ -77,7 +78,7 @@ const CartSlider = () => {
             <div className="p-6 border-t bg-gray-50">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-lg font-semibold text-charcoal">Subtotal</span>
-                <span className="text-xl font-bold text-charcoal">${getCartTotal().toFixed(2)}</span>
+                <span className="text-xl font-bold text-charcoal">{formatCurrency(getCartTotal())}</span>
               </div>
               <p className="text-sm text-gray-500 text-center mb-4">Taxes and shipping calculated at checkout.</p>
               <div className="space-y-3">

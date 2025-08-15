@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter, Mail, ShoppingBag } from 'lucide-react';
 import { supabase } from '../../integrations/supabase/client';
+import { formatCurrency } from '../../utils/currency';
 
 interface Customer {
   user_id: string;
@@ -146,7 +147,7 @@ const CustomerManagement = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">${customer.total_spent.toFixed(2)}</div>
+                        <div className="text-sm font-medium text-gray-900">{formatCurrency(customer.total_spent)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${status.color}`}>

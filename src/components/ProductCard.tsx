@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { formatCurrency } from '../utils/currency';
 
 interface Product {
   id: string;
@@ -72,7 +73,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </p>
         <div className="flex justify-between items-center">
           <span className="text-xl font-bold text-sageGreen">
-            ${product.price}
+            {formatCurrency(product.price)}
           </span>
           <button 
             onClick={handleAddToCart}

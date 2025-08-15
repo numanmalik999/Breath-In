@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import { CheckCircle } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
 
 interface OrderDetails {
   id: string;
@@ -60,7 +61,7 @@ const OrderConfirmationPage = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Order Total:</span>
-                  <span className="font-medium text-gray-800">${order.total_amount.toFixed(2)}</span>
+                  <span className="font-medium text-gray-800">{formatCurrency(order.total_amount)}</span>
                 </div>
               </div>
             </div>

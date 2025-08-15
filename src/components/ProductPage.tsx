@@ -4,6 +4,7 @@ import { Star, ShoppingCart, Heart, Truck, Shield, RotateCcw, ChevronLeft, Chevr
 import { getProductBySlug, getProducts } from '../data/products';
 import type { Product } from '../data/products';
 import { useCart } from '../context/CartContext';
+import { formatCurrency } from '../utils/currency';
 
 const ProductPage = () => {
   const { productId: productSlug } = useParams<{ productId: string }>();
@@ -164,16 +165,16 @@ const ProductPage = () => {
 
           <div className="flex items-center space-x-3">
             <span className="text-3xl font-bold text-sageGreen">
-              ${product.price}
+              {formatCurrency(product.price)}
             </span>
             {product.originalPrice && (
               <span className="text-xl text-gray-500 line-through">
-                ${product.originalPrice}
+                {formatCurrency(product.originalPrice)}
               </span>
             )}
             {product.originalPrice && (
               <span className="bg-terracotta text-white px-2 py-1 rounded text-sm font-medium">
-                Save ${(product.originalPrice - product.price).toFixed(2)}
+                Save {formatCurrency(product.originalPrice - product.price)}
               </span>
             )}
           </div>
@@ -315,7 +316,7 @@ const ProductPage = () => {
                 </p>
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-bold text-sageGreen">
-                    ${relatedProduct.price}
+                    {formatCurrency(relatedProduct.price)}
                   </span>
                   <div className="flex items-center space-x-1">
                     <Star className="h-4 w-4 text-yellow-400 fill-current" />

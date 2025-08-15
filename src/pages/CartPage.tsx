@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../integrations/supabase/client';
 import { Plus, Minus, Trash2, ShoppingCart, Tag } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
 
 const CartPage = () => {
   const { state, updateQuantity, removeFromCart, getCartTotal, applyCoupon, removeCoupon, getDiscount, getFinalTotal } = useCart();
@@ -52,14 +53,14 @@ const CartPage = () => {
                 <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg text-charcoal">{item.name}</h3>
-                  <p className="text-sageGreen font-bold mt-1">${item.price.toFixed(2)}</p>
+                  <p className="text-sageGreen font-bold mt-1">{formatCurrency(item.price)}</p>
                 </div>
                 <div className="flex items-center border border-gray-300 rounded-lg">
                   <button onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)} className="px-3 py-2 hover:bg-gray-100"><Minus className="h-4 w-4" /></button>
                   <span className="px-4 py-2 border-x border-gray-300">{item.quantity}</span>
                   <button onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)} className="px-3 py-2 hover:bg-gray-100"><Plus className="h-4 w-4" /></button>
                 </div>
-                <p className="font-semibold text-lg w-20 text-right">${(item.price * (item.quantity || 1)).toFixed(2)}</p>
+                <p className="font-semibold text-lg w-24 text-right">{formatCurrency(item.price * (item.quantity || 1))}</p>
                 <button onClick={() => removeFromCart(item.id)} className="text-gray-500 hover:text-red-600"><Trash2 className="h-5 w-5" /></button>
               </div>
             ))}
@@ -86,7 +87,7 @@ const CartPage = () => {
             <div className="text-right space-y-2">
               <div className="flex justify-end items-center space-x-4">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="text-xl font-semibold text-charcoal w-28 text-right">${getCartTotal().toFixed(2)}</span>
+                <span className="text-xl font-semibold text-charcoal w-32 text-right">{formatCurrency(getCartTotal())}</span>
               </div>
               {state.coupon && (
                 <div className="flex justify-end items-center space-x-4">
@@ -94,14 +95,14 @@ const CartPage = () => {
                     <Tag className="h-4 w-4" /> Discount ({state.coupon.code})
                     <button onClick={removeCoupon} className="text-red-500 hover:underline text-xs">(Remove)</button>
                   </span>
-                  <span className="text-xl font-semibold text-green-600 w-28 text-right">-${getDiscount().toFixed(2)}</span>
+                  <span className="text-xl font-semibold text-green-600 w-32 text-right">-{formatCurrency(getDiscount())}</span>
                 </div>
               )}
               <div className="flex justify-end items-center space-x-4 border-t pt-2">
                 <span className="text-lg font-bold text-charcoal">Total</span>
-                <span className="text-2xl font-bold text-charcoal w-28 text-right">${getFinalTotal().toFixed(2)}</span>
+                <span className="text-2xl font-bold text-charcoal w-32 text-right">{formatCurrency(getFinalTotal())}</span>
               </div>
-              <p className="text-sm text-gray-500 mt-1">Taxes and shipping calculated at checkout</p>
+              <p className="text-sm text-gray-500 mt-1">Shipping calculated at checkout</p>
             </div>
             <div className="mt-6 flex justify-end">
               <Link to="/checkout" className="bg-sageGreen text-white px-8 py-4 rounded-lg font-medium hover:bg-opacity-90 transform hover:scale-105 transition-all duration-200">

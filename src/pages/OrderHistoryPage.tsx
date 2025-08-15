@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../integrations/supabase/client';
 import { Package, Calendar, Hash } from 'lucide-react';
+import { formatCurrency } from '../utils/currency';
 
 interface Order {
   id: string;
@@ -92,7 +93,7 @@ const OrderHistoryPage = () => {
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-gray-500">Total</p>
-                      <p className="font-semibold text-gray-800">${order.total_amount.toFixed(2)}</p>
+                      <p className="font-semibold text-gray-800">{formatCurrency(order.total_amount)}</p>
                     </div>
                   </div>
                 </div>

@@ -18,6 +18,8 @@ interface CartState {
   items: Product[];
   coupon: Coupon | null;
   isCartOpen: boolean;
+  shippingProvince: string;
+  shippingCost: number;
 }
 
 interface CartContextType {
@@ -34,6 +36,7 @@ interface CartContextType {
   getFinalTotal: () => number;
   openCart: () => void;
   closeCart: () => void;
+  setShippingProvince: (province: string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -46,7 +49,8 @@ type CartAction =
   | { type: 'APPLY_COUPON'; coupon: Coupon }
   | { type: 'REMOVE_COUPON' }
   | { type: 'OPEN_CART' }
-  | { type: 'CLOSE_CART' };
+  | { type: 'CLOSE_CART' }
+  | { type: 'SET_SHIPPING'; province: string; cost: number };
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
@@ -83,7 +87,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
           .filter(item => item.quantity && item.quantity > 0),
       };
     case 'CLEAR_CART':
-      return { ...state, items: [], coupon: null };
+      return { ...state, items: [], coupon: null, shippingProvince: '', shippingCost: 0 };
     case 'APPLY_COUPON':
       return { ...state, coupon: action.coupon };
     case 'REMOVE_COUPON':
@@ -92,18 +96,20 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, isCartOpen: true };
     case 'CLOSE_CART':
       return { ...state, isCartOpen: false };
+    case 'SET_SHIPPING':
+      return { ...state, shippingProvince: action.province, shippingCost: action.cost };
     default:
       return state;
   }
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, { items: [], coupon: null, isCartOpen: false }, (initialState) => {
+  const [state, dispatch] = useReducer(cartReducer, { items: [], coupon: null, isCartOpen: false, shippingProvince: '', shippingCost: 0 }, (initialState) => {
     try {
       const storedCart = localStorage.getItem('breathin_cart');
       if (storedCart) {
         const parsed = JSON.parse(storedCart);
-        return { ...parsed, isCartOpen: false }; // Always start with cart closed
+        return { ...parsed, isCartOpen: false, shippingProvince: '', shippingCost: 0 };
       }
     } catch (error) {
       console.error("Failed to parse cart from localStorage", error);
@@ -119,6 +125,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [state]);
 
+  const getCartTotal = () => {
+    return state.items.reduce((total, item) => total + item.price * (item.quantity || 1), 0);
+  };
+
+  const getDiscount = () => {
+    const subtotal = getCartTotal();
+    if (!state.coupon || subtotal === 0) return 0;
+    let discount = 0;
+    if (state.coupon.discount_type === 'percentage') {
+      discount = subtotal * (state.coupon.discount_value / 100);
+    } else if (state.coupon.discount_type === 'fixed') {
+      discount = state.coupon.discount_value;
+    }
+    return Math.min(discount, subtotal);
+  };
+
+  const setShippingProvince = (province: string) => {
+    const subtotalAfterDiscount = getCartTotal() - getDiscount();
+    let cost = 0;
+    if (subtotalAfterDiscount < 2500 && subtotalAfterDiscount > 0) {
+      cost = province === 'Punjab' ? 200 : 300;
+    }
+    dispatch({ type: 'SET_SHIPPING', province, cost });
+  };
+
   const addToCart = (product: Product) => dispatch({ type: 'ADD_TO_CART', product });
   const removeFromCart = (productId: string) => dispatch({ type: 'REMOVE_FROM_CART', productId });
   const updateQuantity = (productId: string, quantity: number) => dispatch({ type: 'UPDATE_QUANTITY', productId, quantity });
@@ -128,30 +159,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const openCart = () => dispatch({ type: 'OPEN_CART' });
   const closeCart = () => dispatch({ type: 'CLOSE_CART' });
 
-  const getCartTotal = () => {
-    return state.items.reduce((total, item) => total + item.price * (item.quantity || 1), 0);
-  };
-
   const getCartCount = () => {
     return state.items.reduce((count, item) => count + (item.quantity || 1), 0);
   };
 
-  const getDiscount = () => {
-    const subtotal = getCartTotal();
-    if (!state.coupon || subtotal === 0) return 0;
-
-    let discount = 0;
-    if (state.coupon.discount_type === 'percentage') {
-      discount = subtotal * (state.coupon.discount_value / 100);
-    } else if (state.coupon.discount_type === 'fixed') {
-      discount = state.coupon.discount_value;
-    }
-    
-    return Math.min(discount, subtotal);
-  };
-
   const getFinalTotal = () => {
-    return getCartTotal() - getDiscount();
+    return getCartTotal() - getDiscount() + state.shippingCost;
   };
 
   return (
@@ -169,6 +182,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       getFinalTotal,
       openCart,
       closeCart,
+      setShippingProvince,
     }}>
       {children}
     </CartContext.Provider>

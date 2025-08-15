@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Users, ShoppingBag, DollarSign, Eye } from 'lucide-react';
 import { supabase } from '../../integrations/supabase/client';
+import { formatCurrency } from '../../utils/currency';
 
 interface Metric {
   title: string;
@@ -35,7 +36,7 @@ const Analytics = () => {
         const newMetrics: Metric[] = [
           {
             title: 'Revenue',
-            value: `$${analyticsData.revenue.value.toFixed(2)}`,
+            value: formatCurrency(analyticsData.revenue.value),
             change: `${analyticsData.revenue.change.toFixed(1)}%`,
             changeType: analyticsData.revenue.change >= 0 ? 'positive' : 'negative',
             icon: DollarSign,
@@ -141,7 +142,7 @@ const Analytics = () => {
                       style={{ width: `${(data.sales / Math.max(...salesData.map(s => s.sales), 1)) * 100}%` }}
                     ></div>
                   </div>
-                  <span className="text-sm font-medium text-gray-900">${data.sales.toFixed(2)}</span>
+                  <span className="text-sm font-medium text-gray-900">{formatCurrency(data.sales)}</span>
                 </div>
               </div>
             )) : <p className="text-sm text-gray-500">No sales data yet.</p>}

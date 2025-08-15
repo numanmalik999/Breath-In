@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Download, Edit, Package, Truck, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../../integrations/supabase/client';
 import EditOrderModal from './EditOrderModal';
+import { formatCurrency } from '../../utils/currency';
 
 export interface Order {
   id: string;
@@ -130,7 +131,7 @@ const OrderManagement = () => {
                       <div className="text-sm font-medium text-gray-900">{order.customer_email || 'N/A'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.item_count}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.total_amount.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatCurrency(order.total_amount)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.tracking_number || 'N/A'}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
