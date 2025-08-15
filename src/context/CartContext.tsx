@@ -17,6 +17,7 @@ interface Coupon {
 interface CartState {
   items: Product[];
   coupon: Coupon | null;
+  isCartOpen: boolean;
 }
 
 interface CartContextType {
@@ -31,6 +32,8 @@ interface CartContextType {
   removeCoupon: () => void;
   getDiscount: () => number;
   getFinalTotal: () => number;
+  openCart: () => void;
+  closeCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -41,7 +44,9 @@ type CartAction =
   | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number }
   | { type: 'CLEAR_CART' }
   | { type: 'APPLY_COUPON'; coupon: Coupon }
-  | { type: 'REMOVE_COUPON' };
+  | { type: 'REMOVE_COUPON' }
+  | { type: 'OPEN_CART' }
+  | { type: 'CLOSE_CART' };
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
@@ -83,17 +88,22 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, coupon: action.coupon };
     case 'REMOVE_COUPON':
       return { ...state, coupon: null };
+    case 'OPEN_CART':
+      return { ...state, isCartOpen: true };
+    case 'CLOSE_CART':
+      return { ...state, isCartOpen: false };
     default:
       return state;
   }
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, { items: [], coupon: null }, (initialState) => {
+  const [state, dispatch] = useReducer(cartReducer, { items: [], coupon: null, isCartOpen: false }, (initialState) => {
     try {
       const storedCart = localStorage.getItem('breathin_cart');
       if (storedCart) {
-        return JSON.parse(storedCart);
+        const parsed = JSON.parse(storedCart);
+        return { ...parsed, isCartOpen: false }; // Always start with cart closed
       }
     } catch (error) {
       console.error("Failed to parse cart from localStorage", error);
@@ -103,7 +113,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem('breathin_cart', JSON.stringify(state));
+      localStorage.setItem('breathin_cart', JSON.stringify({ ...state, isCartOpen: false }));
     } catch (error) {
       console.error("Failed to save cart to localStorage", error);
     }
@@ -115,6 +125,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = () => dispatch({ type: 'CLEAR_CART' });
   const applyCoupon = (coupon: Coupon) => dispatch({ type: 'APPLY_COUPON', coupon });
   const removeCoupon = () => dispatch({ type: 'REMOVE_COUPON' });
+  const openCart = () => dispatch({ type: 'OPEN_CART' });
+  const closeCart = () => dispatch({ type: 'CLOSE_CART' });
 
   const getCartTotal = () => {
     return state.items.reduce((total, item) => total + item.price * (item.quantity || 1), 0);
@@ -155,6 +167,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeCoupon,
       getDiscount,
       getFinalTotal,
+      openCart,
+      closeCart,
     }}>
       {children}
     </CartContext.Provider>

@@ -14,6 +14,7 @@ import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import AdminRoute from './components/AdminRoute';
+import CartSlider from './components/CartSlider';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <CartProvider>
           <div className="min-h-screen bg-warmBeige flex flex-col">
             <Header />
+            <CartSlider />
             <main className="flex-grow">
               <Routes>
                 <Route path="/" element={<HomePage />} />

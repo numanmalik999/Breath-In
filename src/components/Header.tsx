@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
-  const { getCartCount } = useCart();
+  const { getCartCount, openCart } = useCart();
   const { session } = useAuth();
 
   return (
@@ -44,7 +44,7 @@ const Header = () => {
               <Link to={session ? "/account" : "/login"}>
                 <User className="h-5 w-5 text-charcoal hover:text-sageGreen cursor-pointer transition-colors duration-200" />
               </Link>
-              <Link to="/cart" className="relative">
+              <button onClick={openCart} className="relative">
                 <ShoppingBag 
                   className="h-5 w-5 text-charcoal hover:text-sageGreen cursor-pointer transition-colors duration-200"
                 />
@@ -53,7 +53,7 @@ const Header = () => {
                     {getCartCount()}
                   </span>
                 )}
-              </Link>
+              </button>
               <Menu className="h-5 w-5 text-charcoal md:hidden cursor-pointer" />
             </div>
           </div>
