@@ -1,4 +1,3 @@
-import React from 'react';
 import { Flower, Home, BookOpen, Coffee } from 'lucide-react';
 
 const categories = [

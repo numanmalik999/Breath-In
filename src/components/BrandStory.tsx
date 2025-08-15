@@ -1,4 +1,3 @@
-import React from 'react';
 import { Leaf, Heart, Users } from 'lucide-react';
 
 const BrandStory = () => {

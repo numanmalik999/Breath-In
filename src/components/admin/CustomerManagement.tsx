@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Search, Filter, Mail, Phone, MapPin, Star, ShoppingBag } from 'lucide-react';
 
 const CustomerManagement = () => {

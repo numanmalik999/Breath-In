@@ -1,23 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   BarChart3,
   Users,
   ShoppingBag,
-  DollarSign,
   TrendingUp,
   Package,
   Mail,
   Settings as SettingsIcon, // Renamed to avoid conflict
-  Eye,
-  Edit,
-  Trash2,
-  Plus,
-  Search,
-  Filter,
-  Download,
-  Calendar,
-  Star,
-  AlertCircle
 } from 'lucide-react';
 import DashboardOverview from './DashboardOverview';
 import ProductManagement from './ProductManagement';

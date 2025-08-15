@@ -1,4 +1,3 @@
-import React from 'react';
 import { TrendingUp, TrendingDown, Users, ShoppingBag, DollarSign, Eye } from 'lucide-react';
 
 const Analytics = () => {

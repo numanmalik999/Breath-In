@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Save, Upload, Globe, Mail, Shield, Bell, CreditCard } from 'lucide-react';
 
 const Settings = () => {

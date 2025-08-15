@@ -1,6 +1,3 @@
-import React from 'react';
-import { Play } from 'lucide-react';
-
 const ProductVideo = () => {
   return (
     <div className="max-w-4xl mx-auto mb-16">
