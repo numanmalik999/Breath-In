@@ -20,16 +20,16 @@ const LoginPage = () => {
       <div className="w-full max-w-md space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-serif text-charcoal">
-            Sign in to your account
+            Join or Sign In
           </h2>
         </div>
         <div className="bg-white p-8 rounded-2xl shadow-lg">
           <Auth
             supabaseClient={supabase}
             appearance={{ theme: ThemeSupa }}
-            providers={[]}
+            providers={['google']}
+            socialLayout="horizontal"
             theme="light"
-            view="sign_in"
             redirectTo={`${window.location.origin}/account`}
           />
         </div>
