@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import { Search, ShoppingBag, User, Menu } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useSearch } from '../context/SearchContext';
 
 const Header = () => {
   const { getCartCount, openCart } = useCart();
   const { session } = useAuth();
+  const { openSearch } = useSearch();
 
   return (
     <>
@@ -40,7 +42,9 @@ const Header = () => {
 
             {/* Right side icons */}
             <div className="flex items-center space-x-4">
-              <Search className="h-5 w-5 text-charcoal hover:text-sageGreen cursor-pointer transition-colors duration-200" />
+              <button onClick={openSearch} className="text-charcoal hover:text-sageGreen cursor-pointer transition-colors duration-200">
+                <Search className="h-5 w-5" />
+              </button>
               <Link to={session ? "/account" : "/login"}>
                 <User className="h-5 w-5 text-charcoal hover:text-sageGreen cursor-pointer transition-colors duration-200" />
               </Link>

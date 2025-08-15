@@ -13,35 +13,40 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import { SearchProvider } from './context/SearchContext';
 import AdminRoute from './components/AdminRoute';
 import CartSlider from './components/CartSlider';
+import SearchModal from './components/SearchModal';
 
 function App() {
   return (
     <Router>
       <AuthProvider>
         <CartProvider>
-          <div className="min-h-screen bg-warmBeige flex flex-col">
-            <Header />
-            <CartSlider />
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/shop" element={<ShopPage />} />
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/checkout" element={<CheckoutPage />} />
-                <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/account" element={<AccountPage />} />
-                <Route path="/order-history" element={<OrderHistoryPage />} />
-                <Route path="/product/:productId" element={<ProductPage />} />
-                <Route element={<AdminRoute />}>
-                  <Route path="/admin" element={<AdminDashboard />} />
-                </Route>
-              </Routes>
-            </main>
-            <Footer />
-          </div>
+          <SearchProvider>
+            <div className="min-h-screen bg-warmBeige flex flex-col">
+              <Header />
+              <CartSlider />
+              <SearchModal />
+              <main className="flex-grow">
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/shop" element={<ShopPage />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
+                  <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/account" element={<AccountPage />} />
+                  <Route path="/order-history" element={<OrderHistoryPage />} />
+                  <Route path="/product/:productId" element={<ProductPage />} />
+                  <Route element={<AdminRoute />}>
+                    <Route path="/admin" element={<AdminDashboard />} />
+                  </Route>
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </SearchProvider>
         </CartProvider>
       </AuthProvider>
     </Router>
