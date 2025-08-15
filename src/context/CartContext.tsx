@@ -10,14 +10,14 @@ interface Product {
 
 interface CartState {
   items: Product[];
-  isOpen: boolean;
 }
 
 interface CartContextType {
   state: CartState;
   addToCart: (product: Product) => void;
   removeFromCart: (productId: string) => void;
-  toggleCart: () => void;
+  updateQuantity: (productId: string, quantity: number) => void;
+  clearCart: () => void;
   getCartTotal: () => number;
   getCartCount: () => number;
 }
@@ -27,7 +27,8 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 type CartAction = 
   | { type: 'ADD_TO_CART'; product: Product }
   | { type: 'REMOVE_FROM_CART'; productId: string }
-  | { type: 'TOGGLE_CART' };
+  | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number }
+  | { type: 'CLEAR_CART' };
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
@@ -52,11 +53,19 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         ...state,
         items: state.items.filter(item => item.id !== action.productId),
       };
-    case 'TOGGLE_CART':
+    case 'UPDATE_QUANTITY':
       return {
         ...state,
-        isOpen: !state.isOpen,
+        items: state.items
+          .map(item =>
+            item.id === action.productId
+              ? { ...item, quantity: action.quantity }
+              : item
+          )
+          .filter(item => item.quantity && item.quantity > 0), // Remove item if quantity is 0
       };
+    case 'CLEAR_CART':
+      return { ...state, items: [] };
     default:
       return state;
   }
@@ -65,7 +74,6 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, {
     items: [],
-    isOpen: false,
   });
 
   const addToCart = (product: Product) => {
@@ -76,8 +84,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'REMOVE_FROM_CART', productId });
   };
 
-  const toggleCart = () => {
-    dispatch({ type: 'TOGGLE_CART' });
+  const updateQuantity = (productId: string, quantity: number) => {
+    dispatch({ type: 'UPDATE_QUANTITY', productId, quantity });
+  };
+
+  const clearCart = () => {
+    dispatch({ type: 'CLEAR_CART' });
   };
 
   const getCartTotal = () => {
@@ -93,7 +105,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       state,
       addToCart,
       removeFromCart,
-      toggleCart,
+      updateQuantity,
+      clearCart,
       getCartTotal,
       getCartCount,
     }}>

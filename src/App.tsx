@@ -8,6 +8,9 @@ import LoginPage from './pages/LoginPage';
 import AccountPage from './pages/AccountPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import ShopPage from './pages/ShopPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import AdminRoute from './components/AdminRoute';
@@ -23,6 +26,9 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/shop" element={<ShopPage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/account" element={<AccountPage />} />
                 <Route path="/order-history" element={<OrderHistoryPage />} />
