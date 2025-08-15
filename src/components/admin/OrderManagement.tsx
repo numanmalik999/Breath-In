@@ -23,7 +23,11 @@ const OrderManagement = () => {
 
   const fetchOrders = async () => {
     setLoading(true);
-    const { data, error } = await supabase.rpc('get_orders_with_details');
+    const { data, error } = await supabase
+      .from('orders_with_details')
+      .select('*')
+      .order('created_at', { ascending: false });
+
     if (error) {
       console.error('Error fetching orders:', error);
       setError('Failed to fetch orders.');

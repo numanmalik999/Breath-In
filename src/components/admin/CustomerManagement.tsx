@@ -21,7 +21,11 @@ const CustomerManagement = () => {
   useEffect(() => {
     const fetchCustomers = async () => {
       setLoading(true);
-      const { data, error } = await supabase.rpc('get_customers_with_details');
+      const { data, error } = await supabase
+        .from('customers_with_details')
+        .select('*')
+        .order('joined_date', { ascending: false });
+        
       if (error) {
         console.error('Error fetching customers:', error);
         setError('Failed to fetch customer data.');
