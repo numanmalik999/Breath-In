@@ -1,18 +1,36 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
+import { supabase } from '../integrations/supabase/client';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    setIsSubmitted(true);
+    setLoading(true);
+    setError('');
+    setIsSubmitted(false);
+
+    const { error } = await supabase.functions.invoke('send-contact-email', {
+      body: formData,
+    });
+
+    if (error) {
+      console.error('Error sending contact form:', error);
+      setError('Sorry, there was an issue sending your message. Please try again later.');
+      setIsSubmitted(false);
+    } else {
+      setIsSubmitted(true);
+      setFormData({ name: '', email: '', message: '' }); // Clear form
+    }
+    setLoading(false);
   };
 
   return (
@@ -40,20 +58,21 @@ const ContactPage = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                  <input type="text" name="name" id="name" required onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sageGreen" />
+                  <input type="text" name="name" id="name" value={formData.name} required onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sageGreen" />
                 </div>
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                  <input type="email" name="email" id="email" required onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sageGreen" />
+                  <input type="email" name="email" id="email" value={formData.email} required onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sageGreen" />
                 </div>
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                  <textarea name="message" id="message" rows={5} required onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sageGreen"></textarea>
+                  <textarea name="message" id="message" rows={5} value={formData.message} required onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sageGreen"></textarea>
                 </div>
-                <button type="submit" className="w-full bg-sageGreen text-white py-3 rounded-lg font-medium hover:bg-opacity-90 transition-all duration-200 flex items-center justify-center space-x-2">
-                  <Send className="h-5 w-5" />
-                  <span>Send Message</span>
+                <button type="submit" disabled={loading} className="w-full bg-sageGreen text-white py-3 rounded-lg font-medium hover:bg-opacity-90 transition-all duration-200 flex items-center justify-center space-x-2 disabled:bg-opacity-50">
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                  <span>{loading ? 'Sending...' : 'Send Message'}</span>
                 </button>
+                {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
               </form>
             )}
           </div>
