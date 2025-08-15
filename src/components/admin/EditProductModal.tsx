@@ -12,13 +12,13 @@ interface EditProductModalProps {
 
 const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, onSave }) => {
   const [formData, setFormData] = useState(product);
-  const [description, setDescription] = useState(product.description);
+  const [description, setDescription] = useState(product.description || '');
   const [isUploading, setIsUploading] = useState(false);
   const quillRef = useRef<ReactQuill>(null);
 
   useEffect(() => {
     setFormData(product);
-    setDescription(product.description);
+    setDescription(product.description || '');
   }, [product]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
