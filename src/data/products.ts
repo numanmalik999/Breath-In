@@ -1,7 +1,8 @@
 import { supabase } from '../integrations/supabase/client';
 
 export interface Product {
-  id: string; // Corresponds to 'slug' in the database
+  id: string; // This is the UUID from the database
+  slug: string;
   name: string;
   price: number;
   originalPrice?: number;
@@ -19,7 +20,8 @@ export interface Product {
 
 // Helper to map database product to frontend product
 export const mapProductData = (data: any): Product => ({
-  id: data.slug,
+  id: data.id,
+  slug: data.slug,
   name: data.name,
   price: data.price,
   originalPrice: data.original_price,
@@ -46,17 +48,16 @@ export const getProducts = async (): Promise<Product[]> => {
   return data.map(mapProductData);
 };
 
-export const getProductById = async (id: string): Promise<Product | null> => {
+export const getProductBySlug = async (slug: string): Promise<Product | null> => {
   const { data, error } = await supabase
     .from('products')
     .select('*')
-    .eq('slug', id)
+    .eq('slug', slug)
     .single();
 
   if (error) {
-    // It's normal for single() to return an error if no row is found
-    if (error.code !== 'PGRST116') {
-      console.error(`Error fetching product with id ${id}:`, error);
+    if (error.code !== 'PGRST116') { // Ignore 'not found' errors
+      console.error(`Error fetching product with slug ${slug}:`, error);
     }
     return null;
   }

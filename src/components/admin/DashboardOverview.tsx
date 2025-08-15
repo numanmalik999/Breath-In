@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   DollarSign, 
   ShoppingBag, 
@@ -23,6 +24,7 @@ interface StatCard {
 const DashboardOverview = () => {
   const [stats, setStats] = useState<StatCard[]>([]);
   const [topProducts, setTopProducts] = useState<Product[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -47,7 +49,6 @@ const DashboardOverview = () => {
       ];
       setStats(newStats);
 
-      // Sort products by rating to get top products
       const sortedProducts = [...products].sort((a, b) => (b.rating || 0) - (a.rating || 0));
       setTopProducts(sortedProducts.slice(0, 4).map(mapProductData));
     };
@@ -57,7 +58,6 @@ const DashboardOverview = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <div key={index} className="bg-white rounded-lg shadow-sm p-6">
@@ -77,7 +77,6 @@ const DashboardOverview = () => {
         ))}
       </div>
 
-      {/* Top Rated Products */}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Top Rated Products</h3>
@@ -102,19 +101,18 @@ const DashboardOverview = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+          <button onClick={() => alert('Please go to the Products tab to add a new product.')} className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
             <Package className="h-5 w-5 text-sageGreen" />
             <span className="font-medium text-gray-700">Add New Product</span>
           </button>
-          <button className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+          <button onClick={() => navigate('/')} className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
             <Eye className="h-5 w-5 text-sageGreen" />
             <span className="font-medium text-gray-700">View Website</span>
           </button>
-          <button className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+          <button onClick={() => alert('No new alerts.')} className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
             <AlertCircle className="h-5 w-5 text-sageGreen" />
             <span className="font-medium text-gray-700">Check Alerts</span>
           </button>

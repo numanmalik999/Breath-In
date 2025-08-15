@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Star, ShoppingCart, Heart, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { getProductById, getProducts } from '../data/products';
+import { getProductBySlug, getProducts } from '../data/products';
 import type { Product } from '../data/products';
 import { useCart } from '../context/CartContext';
 
 const ProductPage = () => {
-  const { productId } = useParams<{ productId: string }>();
+  const { productId: productSlug } = useParams<{ productId: string }>();
   const { addToCart } = useCart();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -17,24 +17,24 @@ const ProductPage = () => {
 
   useEffect(() => {
     const fetchProductData = async () => {
-      if (!productId) {
+      if (!productSlug) {
         setLoading(false);
         return;
       };
       setLoading(true);
-      window.scrollTo(0, 0); // Scroll to top on new product load
-      const fetchedProduct = await getProductById(productId);
+      window.scrollTo(0, 0);
+      const fetchedProduct = await getProductBySlug(productSlug);
       setProduct(fetchedProduct);
       
       if (fetchedProduct) {
         const allProducts = await getProducts();
-        setRelatedProducts(allProducts.filter(p => p.id !== fetchedProduct.id));
+        setRelatedProducts(allProducts.filter(p => p.id !== fetchedProduct.id).slice(0, 2));
       }
       
       setLoading(false);
     };
     fetchProductData();
-  }, [productId]);
+  }, [productSlug]);
 
   const nextImage = () => {
     if (!product) return;
@@ -81,7 +81,6 @@ const ProductPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Breadcrumb */}
       <nav className="mb-8">
         <div className="flex items-center space-x-2 text-sm text-gray-600">
           <Link to="/" className="hover:text-sageGreen">Home</Link>
@@ -91,7 +90,6 @@ const ProductPage = () => {
       </nav>
 
       <div className="grid lg:grid-cols-2 gap-12">
-        {/* Image Gallery */}
         <div className="space-y-4">
           <div className="relative aspect-square bg-white rounded-2xl overflow-hidden shadow-lg">
             <img
@@ -117,7 +115,6 @@ const ProductPage = () => {
             )}
           </div>
           
-          {/* Thumbnail Gallery */}
           {product.images.length > 1 && (
             <div className="flex space-x-2 overflow-x-auto">
               {product.images.map((image, index) => (
@@ -139,7 +136,6 @@ const ProductPage = () => {
           )}
         </div>
 
-        {/* Product Info */}
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-serif font-semibold text-charcoal mb-2">
@@ -149,7 +145,6 @@ const ProductPage = () => {
               {product.shortDescription}
             </p>
             
-            {/* Rating */}
             <div className="flex items-center space-x-2 mb-4">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
@@ -167,7 +162,6 @@ const ProductPage = () => {
             </div>
           </div>
 
-          {/* Price */}
           <div className="flex items-center space-x-3">
             <span className="text-3xl font-bold text-sageGreen">
               ${product.price}
@@ -184,13 +178,11 @@ const ProductPage = () => {
             )}
           </div>
 
-          {/* Stock Status */}
           <div className="flex items-center space-x-2">
             <Check className="h-5 w-5 text-green-500" />
             <span className="text-green-600 font-medium">In Stock - Ready to Ship</span>
           </div>
 
-          {/* Quantity & Add to Cart */}
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
               <label className="text-sm font-medium text-charcoal">Quantity:</label>
@@ -225,7 +217,6 @@ const ProductPage = () => {
             </div>
           </div>
 
-          {/* Benefits */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-6 border-t border-gray-200">
             <div className="flex items-center space-x-2">
               <Truck className="h-5 w-5 text-sageGreen" />
@@ -243,7 +234,6 @@ const ProductPage = () => {
         </div>
       </div>
 
-      {/* Product Details Tabs */}
       <div className="mt-16">
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8">
@@ -298,7 +288,6 @@ const ProductPage = () => {
         </div>
       </div>
 
-      {/* Related Products */}
       <div className="mt-16">
         <h2 className="text-2xl font-serif font-semibold text-charcoal mb-8">
           You Might Also Like
@@ -307,7 +296,7 @@ const ProductPage = () => {
           {relatedProducts.map((relatedProduct) => (
             <Link
               key={relatedProduct.id}
-              to={`/product/${relatedProduct.id}`}
+              to={`/product/${relatedProduct.slug}`}
               className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group"
             >
               <div className="aspect-video overflow-hidden">

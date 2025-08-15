@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 
 interface Product {
   id: string;
+  slug: string;
   name: string;
   price: number;
   image: string;
@@ -20,7 +21,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
 
   const handleAddToCart = () => {
-    addToCart(product);
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
   };
 
   return (
@@ -30,7 +36,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative overflow-hidden">
-        <Link to={`/product/${product.id}`}>
+        <Link to={`/product/${product.slug}`}>
           <img 
             src={product.image} 
             alt={product.name}
@@ -56,7 +62,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
       
       <div className="p-6">
-        <Link to={`/product/${product.id}`}>
+        <Link to={`/product/${product.slug}`}>
           <h3 className="font-serif text-lg font-semibold text-charcoal mb-2 hover:text-sageGreen transition-colors duration-200">
             {product.name}
           </h3>
