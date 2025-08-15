@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, status, trackingNumber } = await req.json();
+    const { orderId, status, trackingNumber, courier } = await req.json();
     if (!orderId) throw new Error("Order ID is required");
 
     const supabaseAdmin = createClient(
@@ -24,6 +24,7 @@ serve(async (req) => {
     const updateData = {};
     if (status) updateData.status = status;
     if (trackingNumber !== undefined) updateData.tracking_number = trackingNumber;
+    if (courier) updateData.courier = courier;
 
     if (Object.keys(updateData).length === 0) {
       throw new Error("No update data provided");

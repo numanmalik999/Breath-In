@@ -5,19 +5,21 @@ import { Order } from './OrderManagement';
 interface EditOrderModalProps {
   order: Order;
   onClose: () => void;
-  onSave: (orderId: string, status: string, trackingNumber: string) => void;
+  onSave: (orderId: string, status: string, trackingNumber: string, courier: string) => void;
   isSaving: boolean;
 }
 
 const orderStatuses = ['pending', 'processing', 'shipped', 'completed', 'cancelled'];
+const couriers = ['TCS', 'Leopards', 'M&P'];
 
 const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, onClose, onSave, isSaving }) => {
   const [status, setStatus] = useState(order.status);
   const [trackingNumber, setTrackingNumber] = useState(order.tracking_number || '');
+  const [courier, setCourier] = useState(order.courier || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(order.id, status, trackingNumber);
+    onSave(order.id, status, trackingNumber, courier);
   };
 
   return (
@@ -38,6 +40,19 @@ const EditOrderModal: React.FC<EditOrderModalProps> = ({ order, onClose, onSave,
               >
                 {orderStatuses.map(s => (
                   <option key={s} value={s} className="capitalize">{s}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Courier Service</label>
+              <select
+                value={courier}
+                onChange={(e) => setCourier(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sageGreen"
+              >
+                <option value="" disabled>Select a courier</option>
+                {couriers.map(c => (
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </div>

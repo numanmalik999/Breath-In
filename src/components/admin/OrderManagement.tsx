@@ -10,6 +10,7 @@ export interface Order {
   status: string;
   total_amount: number;
   tracking_number: string | null;
+  courier: string | null;
   customer_email: string;
   item_count: number;
 }
@@ -41,10 +42,10 @@ const OrderManagement = () => {
     fetchOrders();
   }, []);
 
-  const handleSaveOrder = async (orderId: string, status: string, trackingNumber: string) => {
+  const handleSaveOrder = async (orderId: string, status: string, trackingNumber: string, courier: string) => {
     setIsSaving(true);
     const { error } = await supabase.functions.invoke('update-order', {
-      body: { orderId, status, trackingNumber },
+      body: { orderId, status, trackingNumber, courier },
     });
     if (error) {
       console.error('Error updating order:', error);
