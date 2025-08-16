@@ -44,17 +44,19 @@ const Header = () => {
                   Shop <ChevronDown className="h-4 w-4 ml-1" />
                 </Link>
                 {isCategoryMenuOpen && categories.length > 0 && (
-                  <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50">
-                    {categories.map(category => (
-                      <Link 
-                        key={category.id} 
-                        to={`/shop/${category.slug}`}
-                        className="block px-4 py-2 text-sm text-charcoal hover:bg-gray-100"
-                        onClick={() => setCategoryMenuOpen(false)}
-                      >
-                        {category.name}
-                      </Link>
-                    ))}
+                  <div className="absolute top-full left-0 pt-2 w-56 z-50">
+                    <div className="bg-white rounded-lg shadow-lg py-2">
+                      {categories.map(category => (
+                        <Link 
+                          key={category.id} 
+                          to={`/shop/${category.slug}`}
+                          className="block px-4 py-2 text-sm text-charcoal hover:bg-gray-100"
+                          onClick={() => setCategoryMenuOpen(false)}
+                        >
+                          {category.name}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
