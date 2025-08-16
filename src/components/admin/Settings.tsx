@@ -1,8 +1,32 @@
-import { useState } from 'react';
-import { Save, Upload, Globe, Mail, Shield, Bell, CreditCard } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save, Upload, Globe, Mail, Shield, Bell, CreditCard, Loader2 } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
 
 const Settings = () => {
+  const { settings, loading: settingsLoading, updateSetting } = useSettings();
   const [activeSection, setActiveSection] = useState('general');
+  const [announcementText, setAnnouncementText] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+
+  useEffect(() => {
+    if (settings?.announcement_text) {
+      setAnnouncementText(settings.announcement_text);
+    }
+  }, [settings]);
+
+  const handleSaveChanges = async () => {
+    setIsSaving(true);
+    setSaveMessage('');
+    try {
+      await updateSetting('announcement_text', announcementText);
+      setSaveMessage('Settings saved successfully!');
+    } catch (error) {
+      setSaveMessage('Error saving settings.');
+    }
+    setIsSaving(false);
+    setTimeout(() => setSaveMessage(''), 3000);
+  };
 
   const sections = [
     { id: 'general', label: 'General', icon: Globe },
@@ -14,6 +38,18 @@ const Settings = () => {
 
   const renderGeneralSettings = () => (
     <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Announcement Bar Text
+        </label>
+        <input
+          type="text"
+          value={announcementText}
+          onChange={(e) => setAnnouncementText(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sageGreen focus:border-transparent"
+          disabled={settingsLoading}
+        />
+      </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Store Name
@@ -300,11 +336,16 @@ const Settings = () => {
           <div className="bg-white rounded-lg shadow-sm p-6">
             {renderContent()}
             
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <button className="bg-sageGreen text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-200 flex items-center space-x-2">
-                <Save className="h-4 w-4" />
-                <span>Save Changes</span>
+            <div className="mt-6 pt-6 border-t border-gray-200 flex items-center space-x-4">
+              <button 
+                onClick={handleSaveChanges}
+                disabled={isSaving}
+                className="bg-sageGreen text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-200 flex items-center space-x-2 disabled:bg-opacity-50"
+              >
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
               </button>
+              {saveMessage && <p className="text-sm text-gray-600">{saveMessage}</p>}
             </div>
           </div>
         </div>
