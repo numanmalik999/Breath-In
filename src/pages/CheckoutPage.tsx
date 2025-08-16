@@ -126,10 +126,9 @@ const CheckoutPage = () => {
       return;
     }
 
-    // 3. Send confirmation emails (fire and forget)
-    supabase.functions.invoke('send-order-confirmation', {
-      body: { orderId: orderData.id },
-    }).catch(console.error);
+    // 3. Send confirmation emails and WhatsApp notification (fire and forget)
+    supabase.functions.invoke('send-order-confirmation', { body: { orderId: orderData.id } }).catch(console.error);
+    supabase.functions.invoke('send-whatsapp-order', { body: { orderId: orderData.id } }).catch(console.error);
 
     await clearCart();
     navigate(`/order-confirmation/${orderData.id}`);

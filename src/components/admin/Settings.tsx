@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Globe, Mail, Shield, Bell, CreditCard, Loader2, Truck, UploadCloud, Trash2 } from 'lucide-react';
+import { Save, Globe, Shield, Bell, CreditCard, Loader2, Truck, UploadCloud, Trash2 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { supabase } from '../../integrations/supabase/client';
 import PlaceholderContent from './PlaceholderContent';
@@ -17,7 +17,7 @@ const Settings = () => {
     punjab: '200',
     other: '300',
   });
-  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [whatsappSettings, setWhatsappSettings] = useState({ number: '', templateName: '' });
 
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -39,7 +39,10 @@ const Settings = () => {
         punjab: settings.shipping_cost_punjab || '200',
         other: settings.shipping_cost_other || '300',
       });
-      setWhatsappNumber(settings.whatsapp_contact_number || '');
+      setWhatsappSettings({
+        number: settings.admin_whatsapp_number || '',
+        templateName: settings.whatsapp_template_name || 'new_order_admin_notification',
+      });
     }
   }, [settings]);
 
@@ -76,7 +79,8 @@ const Settings = () => {
         updateSetting('shipping_free_threshold', shippingSettings.threshold),
         updateSetting('shipping_cost_punjab', shippingSettings.punjab),
         updateSetting('shipping_cost_other', shippingSettings.other),
-        updateSetting('whatsapp_contact_number', whatsappNumber),
+        updateSetting('admin_whatsapp_number', whatsappSettings.number),
+        updateSetting('whatsapp_template_name', whatsappSettings.templateName),
       ]);
       setSaveMessage('Settings saved successfully!');
     } catch (error) {
@@ -89,9 +93,8 @@ const Settings = () => {
   const sections = [
     { id: 'general', label: 'General', icon: Globe },
     { id: 'shipping', label: 'Shipping', icon: Truck },
-    { id: 'email', label: 'Email', icon: Mail },
-    { id: 'security', label: 'Security', icon: Shield },
     { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'security', label: 'Security', icon: Shield },
     { id: 'payments', label: 'Payments', icon: CreditCard },
   ];
 
@@ -123,11 +126,6 @@ const Settings = () => {
           </div>
         )}
       </div>
-       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Contact Number</label>
-        <input type="text" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="e.g., 923001234567" />
-        <p className="text-xs text-gray-500 mt-1">Include country code without '+' or '00'.</p>
-      </div>
       <div className="pt-6 border-t">
         <h3 className="text-lg font-medium text-gray-900">Announcement Bar</h3>
         <label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Announcement Text</label>
@@ -157,7 +155,7 @@ const Settings = () => {
     </div>
   );
 
-  const renderEmailSettings = () => (
+  const renderNotificationSettings = () => (
     <div className="space-y-6">
       <h3 className="text-lg font-medium text-gray-900">Email Notifications</h3>
       <div>
@@ -170,6 +168,19 @@ const Settings = () => {
         <input type="email" value={emailSettings.sender} onChange={(e) => setEmailSettings(prev => ({ ...prev, sender: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
         <p className="text-xs text-gray-500 mt-1">The "from" address for emails sent to customers. Must be a verified domain with your email provider (e.g., Resend).</p>
       </div>
+      <div className="pt-6 border-t">
+        <h3 className="text-lg font-medium text-gray-900">WhatsApp Notifications</h3>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Admin WhatsApp Number</label>
+          <input type="text" value={whatsappSettings.number} onChange={(e) => setWhatsappSettings(prev => ({ ...prev, number: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="e.g., 923001234567" />
+          <p className="text-xs text-gray-500 mt-1">The number that receives new order notifications. Include country code without '+' or '00'.</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2 mt-4">WhatsApp Template Name</label>
+          <input type="text" value={whatsappSettings.templateName} onChange={(e) => setWhatsappSettings(prev => ({ ...prev, templateName: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          <p className="text-xs text-gray-500 mt-1">The exact name of the approved message template from Meta.</p>
+        </div>
+      </div>
     </div>
   );
 
@@ -177,9 +188,8 @@ const Settings = () => {
     switch (activeSection) {
       case 'general': return renderGeneralSettings();
       case 'shipping': return renderShippingSettings();
-      case 'email': return renderEmailSettings();
+      case 'notifications': return renderNotificationSettings();
       case 'security': return <PlaceholderContent title="Security Settings" message="This section is under development. Future options will include managing login providers and password policies." />;
-      case 'notifications': return <PlaceholderContent title="Notification Settings" message="This section is under development. Future options will allow you to customize which notifications are sent." />;
       case 'payments': return <PlaceholderContent title="Payment Settings" message="This section is under development. Future options will allow you to integrate with payment gateways." />;
       default: return renderGeneralSettings();
     }

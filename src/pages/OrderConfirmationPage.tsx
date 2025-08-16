@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
-import { useSettings } from '../context/SettingsContext';
 import { CheckCircle } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 
@@ -9,20 +8,10 @@ interface OrderDetails {
   id: string;
   total_amount: number;
   created_at: string;
-  order_items: {
-    quantity: number;
-    products: { name: string } | null;
-  }[];
-  profiles: {
-    first_name: string | null;
-    last_name: string | null;
-    phone_number: string | null;
-  } | null;
 }
 
 const OrderConfirmationPage = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const { settings } = useSettings();
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,52 +21,19 @@ const OrderConfirmationPage = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('orders')
-        .select(`
-          id,
-          total_amount,
-          created_at,
-          order_items ( quantity, products ( name ) ),
-          profiles ( first_name, last_name, phone_number )
-        `)
+        .select('id, total_amount, created_at')
         .eq('id', orderId)
         .single();
       
       if (error) {
         console.error('Error fetching order:', error);
       } else {
-        setOrder(data as unknown as OrderDetails);
+        setOrder(data);
       }
       setLoading(false);
     };
     fetchOrder();
   }, [orderId]);
-
-  const generateWhatsAppMessage = () => {
-    if (!order || !order.profiles) return '';
-
-    const customerName = `${order.profiles.first_name || ''} ${order.profiles.last_name || ''}`.trim();
-    const items = order.order_items.map(item => `- ${item.products?.name} (x${item.quantity})`).join('\n');
-    
-    const message = `
-*New Order Received!*
-
-*Order ID:* #${order.id.substring(0, 8)}
-*Customer:* ${customerName}
-*Phone:* ${order.profiles.phone_number || 'N/A'}
-
----
-*Items:*
-${items}
----
-
-*Total Amount:* ${formatCurrency(order.total_amount)}
-    `.trim().replace(/\n\s*\n/g, '\n'); // Remove extra blank lines
-
-    return encodeURIComponent(message);
-  };
-
-  const whatsappNumber = settings?.whatsapp_contact_number;
-  const whatsappLink = `https://wa.me/${whatsappNumber}?text=${generateWhatsAppMessage()}`;
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-4 text-center">
@@ -90,7 +46,7 @@ ${items}
           <>
             <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
             <h1 className="mt-4 text-3xl font-serif text-charcoal">Thank you for your order!</h1>
-            <p className="mt-2 text-gray-600">Your order has been placed successfully. A confirmation email has been sent.</p>
+            <p className="mt-2 text-gray-600">Your order has been placed successfully. A confirmation email has been sent, and the store admin has been notified.</p>
             
             <div className="mt-8 text-left bg-gray-50 p-6 rounded-lg border">
               <h2 className="font-semibold text-lg mb-4">Order Summary</h2>
@@ -110,18 +66,7 @@ ${items}
               </div>
             </div>
 
-            {whatsappNumber && (
-              <a 
-                href={whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-6 inline-block bg-green-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-600 transition-all duration-200"
-              >
-                Send Order Details to Admin via WhatsApp
-              </a>
-            )}
-
-            <Link to="/shop" className="mt-4 block text-sageGreen hover:underline">
+            <Link to="/shop" className="mt-6 inline-block bg-sageGreen text-white px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-all duration-200">
               Continue Shopping
             </Link>
           </>
