@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Plus, Search, Edit, Trash2, Star, Package, Eye } from 'lucide-react';
 import { getProducts, Product } from '../../data/products';
 import AddProductModal from './AddProductModal';
@@ -134,6 +135,9 @@ const ProductManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.reviewCount}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
+                      <Link to={`/product/${product.slug}`} target="_blank" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
+                        <Eye className="h-4 w-4" />
+                      </Link>
                       <button onClick={() => setEditingProduct(product)} className="text-gray-600 hover:text-sageGreen transition-colors duration-200"><Edit className="h-4 w-4" /></button>
                       <button onClick={() => handleDeleteProduct(product.id, product.name)} className="text-gray-600 hover:text-red-600 transition-colors duration-200"><Trash2 className="h-4 w-4" /></button>
                     </div>
