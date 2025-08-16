@@ -14,12 +14,8 @@ const AnnouncementBar = () => {
         <div className="py-2 animate-marquee whitespace-nowrap">
           <span className="mx-4">{announcementText}</span>
           <span className="mx-4">{announcementText}</span>
-          <span className="mx-4">{announcementText}</span>
-          <span className="mx-4">{announcementText}</span>
         </div>
         <div className="absolute top-0 py-2 animate-marquee2 whitespace-nowrap">
-          <span className="mx-4">{announcementText}</span>
-          <span className="mx-4">{announcementText}</span>
           <span className="mx-4">{announcementText}</span>
           <span className="mx-4">{announcementText}</span>
         </div>

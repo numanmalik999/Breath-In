@@ -20,6 +20,7 @@ export default {
         'slide-up': 'slideUp 0.6s ease-out',
         'float': 'float 3s ease-in-out infinite',
         'marquee': 'marquee 25s linear infinite',
+        'marquee2': 'marquee2 25s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -37,6 +38,10 @@ export default {
         marquee: {
           '0%': { transform: 'translateX(0%)' },
           '100%': { transform: 'translateX(-100%)' },
+        },
+        marquee2: {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(0%)' },
         },
       },
     },
