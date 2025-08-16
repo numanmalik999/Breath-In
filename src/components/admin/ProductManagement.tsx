@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Edit, Trash2, Star, Package, Eye } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { getProducts, Product } from '../../data/products';
 import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
 import { supabase } from '../../integrations/supabase/client';
 
-type NewProductData = Omit<Product, 'id' | 'slug' | 'rating' | 'reviewCount'>;
+type NewProductData = Omit<Product, 'id' | 'slug' | 'rating' | 'reviewCount' | 'category'>;
 
 const ProductManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,9 +23,41 @@ const ProductManagement = () => {
     fetchProducts();
   }, []);
 
-  const handleAddProduct = async (productData: NewProductData) => {
+  const handleCategory = async (categoryName?: string): Promise<string | null> => {
+    if (!categoryName || categoryName.trim() === '') return null;
+
+    const trimmedName = categoryName.trim();
+    const slug = trimmedName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+
+    let { data: existingCategory } = await supabase.from('categories').select('id').eq('name', trimmedName).single();
+
+    if (existingCategory) {
+      return existingCategory.id;
+    } else {
+      const { data: newCategory, error } = await supabase.from('categories').insert({ name: trimmedName, slug }).select('id').single();
+      if (error) {
+        console.error('Error creating category:', error);
+        return null;
+      }
+      return newCategory.id;
+    }
+  };
+
+  const handleAddProduct = async (productData: NewProductData, categoryName?: string) => {
+    const categoryId = await handleCategory(categoryName);
     const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
-    const { error } = await supabase.from('products').insert([{ ...productData, slug, original_price: productData.originalPrice, short_description: productData.shortDescription, in_stock: productData.inStock, review_count: 0, rating: 0 }]);
+    
+    const { error } = await supabase.from('products').insert([{ 
+      ...productData, 
+      slug, 
+      category_id: categoryId,
+      original_price: productData.originalPrice, 
+      short_description: productData.shortDescription, 
+      in_stock: productData.inStock, 
+      review_count: 0, 
+      rating: 0 
+    }]);
+
     if (error) console.error('Error adding product:', error);
     else {
       await fetchProducts();
@@ -33,7 +65,8 @@ const ProductManagement = () => {
     }
   };
 
-  const handleUpdateProduct = async (productData: Product) => {
+  const handleUpdateProduct = async (productData: Product, categoryName?: string) => {
+    const categoryId = await handleCategory(categoryName);
     const { error } = await supabase
       .from('products')
       .update({
@@ -45,6 +78,7 @@ const ProductManagement = () => {
         features: productData.features,
         in_stock: productData.inStock,
         images: productData.images,
+        category_id: categoryId,
       })
       .eq('id', productData.id);
 
@@ -100,10 +134,9 @@ const ProductManagement = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reviews</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -119,6 +152,7 @@ const ProductManagement = () => {
                       </div>
                     </div>
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.category?.name || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">${product.price}</div>
                     {product.originalPrice && <div className="text-sm text-gray-500 line-through">${product.originalPrice}</div>}
@@ -126,13 +160,6 @@ const ProductManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{product.inStock ? 'In Stock' : 'Out of Stock'}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="ml-1 text-sm text-gray-900">{product.rating}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.reviewCount}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
                       <Link to={`/product/${product.slug}`} target="_blank" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
@@ -146,36 +173,6 @@ const ProductManagement = () => {
               ))}
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center">
-            <Package className="h-8 w-8 text-sageGreen" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Products</p>
-              <p className="text-2xl font-bold text-gray-900">{productList.length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center">
-            <Star className="h-8 w-8 text-yellow-500" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Avg Rating</p>
-              <p className="text-2xl font-bold text-gray-900">{productList.length > 0 ? (productList.reduce((acc, p) => acc + p.rating, 0) / productList.length).toFixed(1) : 0}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center">
-            <Eye className="h-8 w-8 text-blue-500" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Reviews</p>
-              <p className="text-2xl font-bold text-gray-900">{productList.reduce((acc, p) => acc + p.reviewCount, 0)}</p>
-            </div>
-          </div>
         </div>
       </div>
 

@@ -2,24 +2,35 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, UploadCloud, Trash2 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import { supabase } from '../../integrations/supabase/client';
-import { Product } from '../../data/products';
+import { Product, Category, getCategories } from '../../data/products';
 
 interface EditProductModalProps {
   product: Product;
   onClose: () => void;
-  onSave: (product: Product) => void;
+  onSave: (product: Product, categoryName?: string) => void;
 }
 
 const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, onSave }) => {
   const [formData, setFormData] = useState(product);
   const [description, setDescription] = useState(product.description ?? '');
+  const [categoryName, setCategoryName] = useState(product.category?.name ?? '');
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const quillRef = useRef<ReactQuill>(null);
 
   useEffect(() => {
     setFormData(product);
     setDescription(product.description ?? '');
+    setCategoryName(product.category?.name ?? '');
   }, [product]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const data = await getCategories();
+      setCategories(data);
+    };
+    fetchCategories();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -83,7 +94,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ ...formData, description });
+    onSave({ ...formData, description }, categoryName);
   };
 
   return (
@@ -120,9 +131,18 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
               ))}
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-            <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+              <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <input type="text" list="categories" value={categoryName} onChange={(e) => setCategoryName(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="e.g., Starter Kits" />
+              <datalist id="categories">
+                {categories.map(cat => <option key={cat.id} value={cat.name} />)}
+              </datalist>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

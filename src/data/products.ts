@@ -1,5 +1,11 @@
 import { supabase } from '../integrations/supabase/client';
 
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 export interface Product {
   id: string; // This is the UUID from the database
   slug: string;
@@ -16,6 +22,11 @@ export interface Product {
   inStock: boolean;
   rating: number;
   reviewCount: number;
+  category?: {
+    name: string;
+    slug: string;
+  };
+  categoryId?: string | null;
 }
 
 // Helper to map database product to frontend product
@@ -33,12 +44,41 @@ export const mapProductData = (data: any): Product => ({
   inStock: data.in_stock,
   rating: data.rating,
   reviewCount: data.review_count,
+  category: data.categories ? { name: data.categories.name, slug: data.categories.slug } : undefined,
+  categoryId: data.category_id,
 });
 
-export const getProducts = async (): Promise<Product[]> => {
+export const getCategories = async (): Promise<Category[]> => {
   const { data, error } = await supabase
-    .from('products')
-    .select('*');
+    .from('categories')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
+  return data;
+};
+
+export const getProducts = async (categorySlug?: string): Promise<Product[]> => {
+  let query = supabase.from('products').select('*, categories(name, slug)');
+
+  if (categorySlug) {
+    const { data: categoryData, error: categoryError } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('slug', categorySlug)
+      .single();
+
+    if (categoryError || !categoryData) {
+      console.error(`Category with slug ${categorySlug} not found:`, categoryError);
+      return [];
+    }
+    query = query.eq('category_id', categoryData.id);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error fetching products:', error);
@@ -51,7 +91,7 @@ export const getProducts = async (): Promise<Product[]> => {
 export const getProductBySlug = async (slug: string): Promise<Product | null> => {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, categories(name, slug)')
     .eq('slug', slug)
     .single();
 

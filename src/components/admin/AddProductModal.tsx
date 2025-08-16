@@ -1,18 +1,18 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, UploadCloud, Trash2 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import { supabase } from '../../integrations/supabase/client';
-import { Product } from '../../data/products';
+import { Product, Category, getCategories } from '../../data/products';
 
-type NewProductData = Omit<Product, 'id' | 'rating' | 'reviewCount' | 'slug'>;
+type NewProductData = Omit<Product, 'id' | 'rating' | 'reviewCount' | 'slug' | 'category'>;
 
 interface AddProductModalProps {
   onClose: () => void;
-  onAddProduct: (product: NewProductData) => void;
+  onAddProduct: (product: NewProductData, categoryName?: string) => void;
 }
 
 const AddProductModal: React.FC<AddProductModalProps> = ({ onClose, onAddProduct }) => {
-  const [newProduct, setNewProduct] = useState<Omit<NewProductData, 'description'>>({
+  const [newProduct, setNewProduct] = useState<Omit<NewProductData, 'description' | 'categoryId'>>({
     name: '',
     price: 0,
     originalPrice: 0,
@@ -23,8 +23,18 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ onClose, onAddProduct
     inStock: true,
   });
   const [description, setDescription] = useState('');
+  const [categoryName, setCategoryName] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const quillRef = useRef<ReactQuill>(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const data = await getCategories();
+      setCategories(data);
+    };
+    fetchCategories();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -92,7 +102,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ onClose, onAddProduct
       description,
       price: Number(newProduct.price),
       originalPrice: Number(newProduct.originalPrice) || undefined,
-    });
+    }, categoryName);
   };
 
   return (
@@ -130,9 +140,18 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ onClose, onAddProduct
               ))}
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-            <input type="text" name="name" value={newProduct.name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+              <input type="text" name="name" value={newProduct.name} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <input type="text" list="categories" value={categoryName} onChange={(e) => setCategoryName(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="e.g., Starter Kits" />
+              <datalist id="categories">
+                {categories.map(cat => <option key={cat.id} value={cat.name} />)}
+              </datalist>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

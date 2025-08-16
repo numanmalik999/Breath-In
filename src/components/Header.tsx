@@ -1,13 +1,25 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ShoppingBag, User, Menu } from 'lucide-react';
+import { Search, ShoppingBag, User, Menu, ChevronDown } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useSearch } from '../context/SearchContext';
+import { getCategories, Category } from '../data/products';
 
 const Header = () => {
   const { getCartCount, openCart } = useCart();
   const { session } = useAuth();
   const { openSearch } = useSearch();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isCategoryMenuOpen, setCategoryMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const data = await getCategories();
+      setCategories(data);
+    };
+    fetchCategories();
+  }, []);
 
   return (
     <>
@@ -23,9 +35,29 @@ const Header = () => {
 
             {/* Navigation */}
             <nav className="hidden md:flex space-x-8">
-              <Link to="/shop" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
-                Shop
-              </Link>
+              <div 
+                className="relative"
+                onMouseEnter={() => setCategoryMenuOpen(true)}
+                onMouseLeave={() => setCategoryMenuOpen(false)}
+              >
+                <Link to="/shop" className="text-charcoal hover:text-sageGreen transition-colors duration-200 flex items-center">
+                  Shop <ChevronDown className="h-4 w-4 ml-1" />
+                </Link>
+                {isCategoryMenuOpen && categories.length > 0 && (
+                  <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50">
+                    {categories.map(category => (
+                      <Link 
+                        key={category.id} 
+                        to={`/shop/${category.slug}`}
+                        className="block px-4 py-2 text-sm text-charcoal hover:bg-gray-100"
+                        onClick={() => setCategoryMenuOpen(false)}
+                      >
+                        {category.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
               <Link to="/about" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 About
               </Link>
