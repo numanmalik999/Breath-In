@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,49 +8,46 @@ const corsHeaders = {
 }
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-const TO_EMAIL = 'numan_malik999@yahoo.com';
-// IMPORTANT: For this to work in production, you must verify a domain with Resend
-// and use an email from that domain (e.g., 'noreply@yourdomain.com').
-// For now, we can use the default Resend testing address.
-const FROM_EMAIL = 'onboarding@resend.dev'; 
 
 serve(async (req) => {
-  // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     if (!RESEND_API_KEY) {
-        throw new Error('RESEND_API_KEY is not set in Supabase secrets. The form will not work until it is added.');
+      throw new Error('RESEND_API_KEY is not set in Supabase secrets.');
     }
 
     const { name, email, message } = await req.json();
-
     if (!name || !email || !message) {
       throw new Error('Missing required fields: name, email, or message.');
     }
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Fetch email settings
+    const { data: settingsData, error: settingsError } = await supabaseAdmin.from('settings').select('key, value');
+    if (settingsError) throw settingsError;
+    const settings = settingsData.reduce((acc, setting) => ({ ...acc, [setting.key]: setting.value }), {});
+
+    const TO_EMAIL = settings.admin_notification_email || 'numan_malik999@yahoo.com';
+    const FROM_EMAIL = settings.sender_email || 'onboarding@resend.dev';
 
     const resendPayload = {
       from: FROM_EMAIL,
       to: TO_EMAIL,
       subject: `New Contact Form Submission from ${name}`,
-      html: `
-        <p>You have a new contact form submission from your Breathin website.</p>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message.replace(/\n/g, '<br>')}</p>
-      `,
+      html: `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><p><strong>Message:</strong></p><p>${message.replace(/\n/g, '<br>')}</p>`,
       reply_to: email,
     };
 
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
       body: JSON.stringify(resendPayload),
     });
 

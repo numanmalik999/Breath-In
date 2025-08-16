@@ -1,22 +1,38 @@
 import { useState, useEffect } from 'react';
-import { Save, Globe, Mail, Shield, Bell, CreditCard, Loader2, Truck } from 'lucide-react';
+import { Save, Globe, Mail, Shield, Bell, CreditCard, Loader2, Truck, UploadCloud, Trash2 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
+import { supabase } from '../../integrations/supabase/client';
+import PlaceholderContent from './PlaceholderContent';
 
 const Settings = () => {
   const { settings, loading: settingsLoading, updateSetting } = useSettings();
   const [activeSection, setActiveSection] = useState('general');
+  
+  // State for all settings
   const [announcementText, setAnnouncementText] = useState('');
+  const [siteInfo, setSiteInfo] = useState({ name: '', logoUrl: '' });
+  const [emailSettings, setEmailSettings] = useState({ admin: '', sender: '' });
   const [shippingSettings, setShippingSettings] = useState({
     threshold: '2500',
     punjab: '200',
     other: '300',
   });
+
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
   useEffect(() => {
     if (settings) {
       setAnnouncementText(settings.announcement_text || '');
+      setSiteInfo({
+        name: settings.store_name || 'Breathin',
+        logoUrl: settings.store_logo_url || '',
+      });
+      setEmailSettings({
+        admin: settings.admin_notification_email || '',
+        sender: settings.sender_email || '',
+      });
       setShippingSettings({
         threshold: settings.shipping_free_threshold || '2500',
         punjab: settings.shipping_cost_punjab || '200',
@@ -25,12 +41,36 @@ const Settings = () => {
     }
   }, [settings]);
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingLogo(true);
+    const fileName = `public/logo/${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage.from('product-images').upload(fileName, file);
+    
+    if (error) {
+      console.error('Error uploading logo:', error);
+      setSaveMessage('Error uploading logo.');
+    } else {
+      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(data.path);
+      if (publicUrl) {
+        setSiteInfo(prev => ({ ...prev, logoUrl: publicUrl }));
+      }
+    }
+    setIsUploadingLogo(false);
+  };
+
   const handleSaveChanges = async () => {
     setIsSaving(true);
     setSaveMessage('');
     try {
       await Promise.all([
         updateSetting('announcement_text', announcementText),
+        updateSetting('store_name', siteInfo.name),
+        updateSetting('store_logo_url', siteInfo.logoUrl),
+        updateSetting('admin_notification_email', emailSettings.admin),
+        updateSetting('sender_email', emailSettings.sender),
         updateSetting('shipping_free_threshold', shippingSettings.threshold),
         updateSetting('shipping_cost_punjab', shippingSettings.punjab),
         updateSetting('shipping_cost_other', shippingSettings.other),
@@ -52,120 +92,113 @@ const Settings = () => {
     { id: 'payments', label: 'Payments', icon: CreditCard },
   ];
 
+  const renderGeneralSettings = () => (
+    <div className="space-y-6">
+      <h3 className="text-lg font-medium text-gray-900">Site Information</h3>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Store Name</label>
+        <input type="text" value={siteInfo.name} onChange={(e) => setSiteInfo(prev => ({ ...prev, name: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Store Logo</label>
+        {siteInfo.logoUrl ? (
+          <div className="flex items-center space-x-4">
+            <img src={siteInfo.logoUrl} alt="Store logo" className="h-16 w-auto bg-gray-100 p-2 rounded-lg" />
+            <button onClick={() => setSiteInfo(prev => ({ ...prev, logoUrl: '' }))} className="text-red-600 hover:text-red-800 text-sm flex items-center space-x-1"><Trash2 className="h-4 w-4" /><span>Remove</span></button>
+          </div>
+        ) : (
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+            <div className="space-y-1 text-center">
+              {isUploadingLogo ? <Loader2 className="mx-auto h-12 w-12 text-gray-400 animate-spin" /> : <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />}
+              <div className="flex text-sm text-gray-600">
+                <label htmlFor="logo-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-sageGreen hover:text-opacity-80">
+                  <span>Upload a file</span>
+                  <input id="logo-upload" name="logo-upload" type="file" className="sr-only" onChange={handleLogoUpload} accept="image/*" />
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="pt-6 border-t">
+        <h3 className="text-lg font-medium text-gray-900">Announcement Bar</h3>
+        <label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Announcement Text</label>
+        <input type="text" value={announcementText} onChange={(e) => setAnnouncementText(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={settingsLoading} />
+      </div>
+    </div>
+  );
+
   const renderShippingSettings = () => (
     <div className="space-y-6">
+      <h3 className="text-lg font-medium text-gray-900">Shipping Rates</h3>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Free Shipping Threshold
-        </label>
-        <input
-          type="number"
-          value={shippingSettings.threshold}
-          onChange={(e) => setShippingSettings(prev => ({ ...prev, threshold: e.target.value }))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-          placeholder="e.g., 2500"
-        />
+        <label className="block text-sm font-medium text-gray-700 mb-2">Free Shipping Threshold</label>
+        <input type="number" value={shippingSettings.threshold} onChange={(e) => setShippingSettings(prev => ({ ...prev, threshold: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
         <p className="text-xs text-gray-500 mt-1">Orders above this amount will have free shipping.</p>
       </div>
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Shipping Cost (Punjab)
-          </label>
-          <input
-            type="number"
-            value={shippingSettings.punjab}
-            onChange={(e) => setShippingSettings(prev => ({ ...prev, punjab: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-            placeholder="e.g., 200"
-          />
+          <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Cost (Punjab)</label>
+          <input type="number" value={shippingSettings.punjab} onChange={(e) => setShippingSettings(prev => ({ ...prev, punjab: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Shipping Cost (Other Provinces)
-          </label>
-          <input
-            type="number"
-            value={shippingSettings.other}
-            onChange={(e) => setShippingSettings(prev => ({ ...prev, other: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-            placeholder="e.g., 300"
-          />
+          <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Cost (Other Provinces)</label>
+          <input type="number" value={shippingSettings.other} onChange={(e) => setShippingSettings(prev => ({ ...prev, other: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
         </div>
       </div>
     </div>
   );
 
-  const renderGeneralSettings = () => (
+  const renderEmailSettings = () => (
     <div className="space-y-6">
+      <h3 className="text-lg font-medium text-gray-900">Email Notifications</h3>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Announcement Bar Text
-        </label>
-        <input
-          type="text"
-          value={announcementText}
-          onChange={(e) => setAnnouncementText(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sageGreen focus:border-transparent"
-          disabled={settingsLoading}
-        />
+        <label className="block text-sm font-medium text-gray-700 mb-2">Admin Notification Email</label>
+        <input type="email" value={emailSettings.admin} onChange={(e) => setEmailSettings(prev => ({ ...prev, admin: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        <p className="text-xs text-gray-500 mt-1">The email address that receives new order and contact form notifications.</p>
       </div>
-      {/* ... other general settings ... */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Sender Email</label>
+        <input type="email" value={emailSettings.sender} onChange={(e) => setEmailSettings(prev => ({ ...prev, sender: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        <p className="text-xs text-gray-500 mt-1">The "from" address for emails sent to customers. Must be a verified domain with your email provider (e.g., Resend).</p>
+      </div>
     </div>
   );
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'general':
-        return renderGeneralSettings();
-      case 'shipping':
-        return renderShippingSettings();
-      // ... other cases
-      default:
-        return renderGeneralSettings();
+      case 'general': return renderGeneralSettings();
+      case 'shipping': return renderShippingSettings();
+      case 'email': return renderEmailSettings();
+      case 'security': return <PlaceholderContent title="Security Settings" message="This section is under development. Future options will include managing login providers and password policies." />;
+      case 'notifications': return <PlaceholderContent title="Notification Settings" message="This section is under development. Future options will allow you to customize which notifications are sent." />;
+      case 'payments': return <PlaceholderContent title="Payment Settings" message="This section is under development. Future options will allow you to integrate with payment gateways." />;
+      default: return renderGeneralSettings();
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
         <p className="text-gray-600">Manage your store configuration</p>
       </div>
-
       <div className="grid lg:grid-cols-4 gap-6">
-        {/* Settings Navigation */}
         <div className="lg:col-span-1">
           <nav className="space-y-1">
             {sections.map((section) => (
-              <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors duration-200 ${
-                  activeSection === section.id
-                    ? 'bg-sageGreen text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
+              <button key={section.id} onClick={() => setActiveSection(section.id)} className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors duration-200 ${activeSection === section.id ? 'bg-sageGreen text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
                 <section.icon className="h-4 w-4" />
                 <span className="text-sm font-medium">{section.label}</span>
               </button>
             ))}
           </nav>
         </div>
-
-        {/* Settings Content */}
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            {renderContent()}
-            
-            <div className="mt-6 pt-6 border-t border-gray-200 flex items-center space-x-4">
-              <button 
-                onClick={handleSaveChanges}
-                disabled={isSaving}
-                className="bg-sageGreen text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-200 flex items-center space-x-2 disabled:bg-opacity-50"
-              >
+          <div className="bg-white rounded-lg shadow-sm">
+            <div className="p-6">{renderContent()}</div>
+            <div className="p-6 mt-6 border-t border-gray-200 flex items-center space-x-4 bg-gray-50 rounded-b-lg">
+              <button onClick={handleSaveChanges} disabled={isSaving} className="bg-sageGreen text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-200 flex items-center space-x-2 disabled:bg-opacity-50">
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
               </button>
