@@ -24,7 +24,7 @@ const Hero = () => {
           Revolutionary magnetic nasal strips for natural breathing enhancement.
         </p>
         <Link 
-          to="/product/breathin-starter-kit"
+          to="/shop"
           className="inline-block bg-sageGreen text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-opacity-90 transform hover:scale-105 transition-all duration-200 animate-slide-up shadow-lg"
         >
           Shop Breathin

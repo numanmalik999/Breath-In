@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import ProductPage from './components/ProductPage';
 import AdminDashboard from './components/admin/AdminDashboard';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -44,7 +43,6 @@ function App() {
                   <Route path="/account" element={<AccountPage />} />
                   <Route path="/track-order" element={<TrackOrderPage />} />
                   <Route path="/shipping-returns" element={<ShippingReturnsPage />} />
-                  <Route path="/product/:productId" element={<ProductPage />} />
                   <Route element={<AdminRoute />}>
                     <Route path="/admin" element={<AdminDashboard />} />
                   </Route>

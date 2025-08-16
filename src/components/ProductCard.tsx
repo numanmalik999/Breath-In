@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { ShoppingCart, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { formatCurrency } from '../utils/currency';
@@ -37,13 +36,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative overflow-hidden">
-        <Link to={`/product/${product.slug}`}>
+        <div className="cursor-pointer">
           <img 
             src={product.image} 
             alt={product.name}
             className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
           />
-        </Link>
+        </div>
         <div className="absolute top-4 right-4">
           <button className="p-2 bg-white rounded-full shadow-md hover:bg-warmBeige transition-colors duration-200">
             <Heart className="h-4 w-4 text-gray-600" />
@@ -63,11 +62,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
       
       <div className="p-6">
-        <Link to={`/product/${product.slug}`}>
-          <h3 className="font-serif text-lg font-semibold text-charcoal mb-2 hover:text-sageGreen transition-colors duration-200">
+        <div className="cursor-pointer">
+          <h3 className="font-serif text-lg font-semibold text-charcoal mb-2">
             {product.name}
           </h3>
-        </Link>
+        </div>
         <p className="text-gray-600 text-sm mb-3">
           {product.description}
         </p>

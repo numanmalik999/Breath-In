@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Edit, Trash2, Eye, Star, Package } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Star, Package, Eye } from 'lucide-react';
 import { getProducts, Product } from '../../data/products';
 import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
@@ -13,7 +12,6 @@ const ProductManagement = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productList, setProductList] = useState<Product[]>([]);
-  const navigate = useNavigate();
 
   const fetchProducts = async () => {
     const products = await getProducts();
@@ -136,7 +134,6 @@ const ProductManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.reviewCount}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
-                      <button onClick={() => navigate(`/product/${product.slug}`)} className="text-gray-600 hover:text-sageGreen transition-colors duration-200"><Eye className="h-4 w-4" /></button>
                       <button onClick={() => setEditingProduct(product)} className="text-gray-600 hover:text-sageGreen transition-colors duration-200"><Edit className="h-4 w-4" /></button>
                       <button onClick={() => handleDeleteProduct(product.id, product.name)} className="text-gray-600 hover:text-red-600 transition-colors duration-200"><Trash2 className="h-4 w-4" /></button>
                     </div>

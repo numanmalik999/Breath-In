@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useSearch } from '../context/SearchContext';
 import { supabase } from '../integrations/supabase/client';
 import { Product, mapProductData } from '../data/products';
@@ -57,10 +56,6 @@ const SearchModal = () => {
 
     return () => clearTimeout(debounceSearch);
   }, [query]);
-
-  const handleResultClick = () => {
-    closeSearch();
-  };
   
   const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
@@ -102,10 +97,8 @@ const SearchModal = () => {
               <ul className="divide-y divide-gray-100 p-4">
                 {results.map(product => (
                   <li key={product.id}>
-                    <Link 
-                      to={`/product/${product.slug}`} 
-                      onClick={handleResultClick}
-                      className="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg"
+                    <div 
+                      className="flex items-center space-x-4 p-3 rounded-lg"
                     >
                       <img src={product.images[0]} alt={product.name} className="w-16 h-16 object-cover rounded-md" />
                       <div className="flex-1">
@@ -113,7 +106,7 @@ const SearchModal = () => {
                         <p className="text-sm text-gray-500">{product.shortDescription}</p>
                       </div>
                       <p className="font-semibold text-sageGreen">{formatCurrency(product.price)}</p>
-                    </Link>
+                    </div>
                   </li>
                 ))}
               </ul>
