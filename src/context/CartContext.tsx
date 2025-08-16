@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, ReactNode, useEffect, useState, useRef } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from './AuthContext';
+import { useSettings } from './SettingsContext';
 
 interface Product {
   id: string;
@@ -113,6 +114,7 @@ const GUEST_CART_KEY = 'breathin_guest_cart';
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
+  const { settings } = useSettings();
   const [state, dispatch] = useReducer(cartReducer, { items: [], coupon: null, isCartOpen: false, shippingProvince: '', shippingCost: 0 });
   const [loading, setLoading] = useState(true);
   const previousUserId = useRef(user?.id);
@@ -271,9 +273,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
   const setShippingProvince = (province: string) => {
     const subtotalAfterDiscount = getCartTotal() - getDiscount();
+    
+    const freeShippingThreshold = Number(settings?.shipping_free_threshold || 2500);
+    const costPunjab = Number(settings?.shipping_cost_punjab || 200);
+    const costOther = Number(settings?.shipping_cost_other || 300);
+
     let cost = 0;
-    if (subtotalAfterDiscount < 2500 && subtotalAfterDiscount > 0) {
-      cost = province === 'Punjab' ? 200 : 300;
+    if (subtotalAfterDiscount < freeShippingThreshold && subtotalAfterDiscount > 0) {
+      cost = province === 'Punjab' ? costPunjab : costOther;
     }
     dispatch({ type: 'SET_SHIPPING', province, cost });
   };
