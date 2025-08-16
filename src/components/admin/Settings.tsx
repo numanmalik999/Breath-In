@@ -17,6 +17,7 @@ const Settings = () => {
     punjab: '200',
     other: '300',
   });
+  const [whatsappNumber, setWhatsappNumber] = useState('');
 
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -38,6 +39,7 @@ const Settings = () => {
         punjab: settings.shipping_cost_punjab || '200',
         other: settings.shipping_cost_other || '300',
       });
+      setWhatsappNumber(settings.whatsapp_contact_number || '');
     }
   }, [settings]);
 
@@ -74,6 +76,7 @@ const Settings = () => {
         updateSetting('shipping_free_threshold', shippingSettings.threshold),
         updateSetting('shipping_cost_punjab', shippingSettings.punjab),
         updateSetting('shipping_cost_other', shippingSettings.other),
+        updateSetting('whatsapp_contact_number', whatsappNumber),
       ]);
       setSaveMessage('Settings saved successfully!');
     } catch (error) {
@@ -119,6 +122,11 @@ const Settings = () => {
             </div>
           </div>
         )}
+      </div>
+       <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Contact Number</label>
+        <input type="text" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="e.g., 923001234567" />
+        <p className="text-xs text-gray-500 mt-1">Include country code without '+' or '00'.</p>
       </div>
       <div className="pt-6 border-t">
         <h3 className="text-lg font-medium text-gray-900">Announcement Bar</h3>

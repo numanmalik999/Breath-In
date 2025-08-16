@@ -22,6 +22,7 @@ import AdminRoute from './components/AdminRoute';
 import CartSlider from './components/CartSlider';
 import SearchModal from './components/SearchModal';
 import AnnouncementBar from './components/AnnouncementBar';
+import WhatsAppButton from './components/WhatsAppButton';
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
                     </Route>
                   </Routes>
                 </main>
+                <WhatsAppButton />
                 <Footer />
               </div>
             </SearchProvider>
