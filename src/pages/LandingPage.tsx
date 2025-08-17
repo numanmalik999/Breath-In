@@ -41,11 +41,28 @@ const LandingPage = () => {
       {/* --- How It Works Section --- */}
       <section className="py-20 px-4">
         <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-serif text-charcoal mb-4">Finally, A Solution That Works</h2>
+          <h2 className="text-3xl md:text-4xl font-serif text-charcoal mb-4">How To Use Breathin</h2>
           <p className="text-lg text-gray-600 mb-16">
-            Traditional nasal strips use sticky, irritating adhesives. Breathin uses a revolutionary magnetic system that's comfortable, reusable, and more effective.
+            Traditional nasal strips use sticky, irritating adhesives. Breathin uses a revolutionary magnetic system that's comfortable, reusable, and more effective. Watch the video to see it in action.
           </p>
         </div>
+
+        <div className="max-w-4xl mx-auto mb-16">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="aspect-video relative">
+              <video 
+                src="d599124f-1234-4321-abcd-1234567890ab.mp4" 
+                className="w-full h-full"
+                controls 
+                playsInline
+                poster="pasted-image-2025-08-17T11-58-34-170Z.png"
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        </div>
+
         <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 text-center">
           <div className="p-6">
             <div className="flex justify-center mb-4">
