@@ -30,7 +30,7 @@ const LandingPage = () => {
           </div>
           <div>
             <img 
-              src="/pasted-image-2025-08-17T11-58-34-170Z.png" 
+              src="/sleepin-women.webp" 
               alt="Woman sleeping peacefully with a nasal dilator, saying goodbye to nasal congestion and snoring"
               className="rounded-2xl shadow-xl w-full h-auto object-cover"
             />
@@ -93,7 +93,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <img 
-              src="/pasted-image-2025-08-17T11-58-21-259Z.png" 
+              src="/colage.avif" 
               alt="Collage of people using the nasal dilator for all activities"
               className="rounded-2xl shadow-lg w-full h-auto object-cover"
             />
