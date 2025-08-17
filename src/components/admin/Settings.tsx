@@ -10,7 +10,7 @@ const Settings = () => {
   
   // State for all settings
   const [announcementText, setAnnouncementText] = useState('');
-  const [siteInfo, setSiteInfo] = useState({ name: '', logoUrl: '' });
+  const [siteInfo, setSiteInfo] = useState({ name: '', logoUrl: '', description: '' });
   const [emailSettings, setEmailSettings] = useState({ admin: '', sender: '' });
   const [shippingSettings, setShippingSettings] = useState({
     threshold: '2500',
@@ -29,6 +29,7 @@ const Settings = () => {
       setSiteInfo({
         name: settings.store_name || 'Breathin',
         logoUrl: settings.store_logo_url || '',
+        description: settings.store_description || '',
       });
       setEmailSettings({
         admin: settings.admin_notification_email || '',
@@ -74,6 +75,7 @@ const Settings = () => {
         updateSetting('announcement_text', announcementText),
         updateSetting('store_name', siteInfo.name),
         updateSetting('store_logo_url', siteInfo.logoUrl),
+        updateSetting('store_description', siteInfo.description),
         updateSetting('admin_notification_email', emailSettings.admin),
         updateSetting('sender_email', emailSettings.sender),
         updateSetting('shipping_free_threshold', shippingSettings.threshold),
@@ -104,6 +106,11 @@ const Settings = () => {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Store Name</label>
         <input type="text" value={siteInfo.name} onChange={(e) => setSiteInfo(prev => ({ ...prev, name: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Store Description</label>
+        <textarea value={siteInfo.description} onChange={(e) => setSiteInfo(prev => ({ ...prev, description: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={3}></textarea>
+        <p className="text-xs text-gray-500 mt-1">This description is used for SEO and may be displayed on your site.</p>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Store Logo</label>
