@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Star, Check, Zap, Moon, Wind, Gift } from 'lucide-react';
 import Testimonials from '../components/Testimonials';
-import AsSeenOn from '../components/AsSeenOn';
 import FaqAccordion from '../components/FaqAccordion';
 import Newsletter from '../components/Newsletter';
 
@@ -38,8 +37,6 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-
-      <AsSeenOn />
 
       {/* --- How It Works Section --- */}
       <section className="py-20 px-4">
@@ -79,8 +76,8 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <img 
-              src="https://images.pexels.com/photos/4046315/pexels-photo-4046315.jpeg" 
-              alt="Person sleeping peacefully"
+              src="https://images.pexels.com/photos/3771045/pexels-photo-3771045.jpeg" 
+              alt="Person waking up refreshed"
               className="rounded-2xl shadow-lg w-full h-auto object-cover"
             />
           </div>
