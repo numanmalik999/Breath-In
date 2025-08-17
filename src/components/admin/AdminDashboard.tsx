@@ -5,7 +5,6 @@ import {
   ShoppingBag,
   TrendingUp,
   Package,
-  Mail,
   Settings as SettingsIcon, // Renamed to avoid conflict
 } from 'lucide-react';
 import DashboardOverview from './DashboardOverview';
@@ -59,9 +58,6 @@ const AdminDashboard = () => {
               <p className="text-gray-600 text-sm">Manage your wellness store</p>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="p-2 text-gray-600 hover:text-sageGreen transition-colors duration-200">
-                <Mail className="h-5 w-5" />
-              </button>
               <div className="w-8 h-8 bg-sageGreen rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">A</span>
               </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Download, Edit, Package, Truck, CheckCircle, AlertCircle } from 'lucide-react';
+import { Search, Download, Edit, Trash2, Package, Truck, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../../integrations/supabase/client';
 import EditOrderModal from './EditOrderModal';
 import { formatCurrency } from '../../utils/currency';
@@ -55,6 +55,36 @@ const OrderManagement = () => {
       await fetchOrders(); // Refresh the list
     }
     setIsSaving(false);
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (window.confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+      // First, delete associated order items
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('order_id', orderId);
+
+      if (itemsError) {
+        console.error('Error deleting order items:', itemsError);
+        alert('Failed to delete order items. The order was not deleted.');
+        return;
+      }
+
+      // Then, delete the order
+      const { error: orderError } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', orderId);
+
+      if (orderError) {
+        console.error('Error deleting order:', orderError);
+        alert('Failed to delete the order.');
+      } else {
+        alert('Order deleted successfully.');
+        fetchOrders(); // Refresh the list
+      }
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -145,9 +175,14 @@ const OrderManagement = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={() => setEditingOrder(order)} className="text-sageGreen hover:text-opacity-80 transition-colors duration-200">
-                        <Edit className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center justify-end space-x-3">
+                        <button onClick={() => setEditingOrder(order)} className="text-gray-500 hover:text-sageGreen transition-colors duration-200">
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleDeleteOrder(order.id)} className="text-gray-500 hover:text-red-600 transition-colors duration-200">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
