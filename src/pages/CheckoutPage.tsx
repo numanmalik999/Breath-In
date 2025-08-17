@@ -13,7 +13,7 @@ const provinces = [
 ];
 
 const CheckoutPage = () => {
-  const { state, getCartTotal, getDiscount, getFinalTotal, clearCart, setShippingProvince } = useCart();
+  const { state, getCartTotal, getDiscount, getFinalTotal, setShippingProvince } = useCart();
   const { session, profile, refreshProfile, loading: authLoading } = useAuth();
   const { settings } = useSettings();
   const navigate = useNavigate();
@@ -134,7 +134,6 @@ const CheckoutPage = () => {
     supabase.functions.invoke('send-order-confirmation', { body: { orderId: orderData.id } }).catch(console.error);
     supabase.functions.invoke('send-whatsapp-order', { body: { orderId: orderData.id } }).catch(console.error);
 
-    await clearCart();
     navigate(`/order-confirmation/${orderData.id}`);
   };
 

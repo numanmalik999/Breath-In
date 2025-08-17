@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import { CheckCircle } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
+import { useCart } from '../context/CartContext';
 
 interface OrderDetails {
   id: string;
@@ -14,6 +15,12 @@ const OrderConfirmationPage = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const { clearCart } = useCart();
+
+  useEffect(() => {
+    // Clear the cart as soon as the user lands on this page.
+    clearCart();
+  }, [clearCart]);
 
   useEffect(() => {
     const fetchOrder = async () => {
