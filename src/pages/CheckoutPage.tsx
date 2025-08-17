@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 import { supabase } from '../integrations/supabase/client';
-import { Lock, Tag } from 'lucide-react';
+import { Lock, Tag, Percent } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 
 const provinces = [
@@ -14,6 +15,7 @@ const provinces = [
 const CheckoutPage = () => {
   const { state, getCartTotal, getDiscount, getFinalTotal, clearCart, setShippingProvince } = useCart();
   const { session, profile, refreshProfile, loading: authLoading } = useAuth();
+  const { settings } = useSettings();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [selectedProvince, setSelectedProvince] = useState('');
@@ -26,6 +28,8 @@ const CheckoutPage = () => {
     city: '',
     postalCode: '',
   });
+
+  const whatsappNumber = settings?.whatsapp_contact_number;
 
   useEffect(() => {
     if (!authLoading && !session) {
@@ -168,6 +172,26 @@ const CheckoutPage = () => {
               </div>
             </section>
             
+            {whatsappNumber && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg text-center">
+                <div className="flex justify-center items-center mb-2">
+                  <Percent className="h-5 w-5 text-green-600 mr-2" />
+                  <h3 className="font-semibold text-green-800">Get a 10% Discount!</h3>
+                </div>
+                <p className="text-sm text-green-700 mb-3">
+                  Pay via bank transfer to get 10% off your order. Contact us on WhatsApp to arrange payment and receive your discount.
+                </p>
+                <a
+                  href={`https://wa.me/${whatsappNumber}?text=Hi! I'd like to pay for my order via bank transfer to get the 10% discount.`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                >
+                  Contact on WhatsApp
+                </a>
+              </div>
+            )}
+
             <div className="pt-4">
               <button type="submit" disabled={loading} className="w-full bg-sageGreen text-white py-4 rounded-lg font-medium hover:bg-opacity-90 disabled:bg-opacity-50 flex items-center justify-center space-x-2">
                 <Lock className="h-5 w-5" />
