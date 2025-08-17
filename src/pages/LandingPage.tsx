@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Star, Check, Zap, Moon, Wind, Gift } from 'lucide-react';
+import { Star, Check, Zap, Moon, Wind, Gift, PlayCircle } from 'lucide-react';
 import Testimonials from '../components/Testimonials';
 import FaqAccordion from '../components/FaqAccordion';
 import Newsletter from '../components/Newsletter';
@@ -49,16 +49,21 @@ const LandingPage = () => {
 
         <div className="max-w-4xl mx-auto mb-16">
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="aspect-video relative">
-              <iframe
-                src="https://www.amazon.com/live/embed/01e0be3c0e1849eaa82b430c96c907b7"
-                title="Breathin Product Demonstration"
-                className="w-full h-full"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
+            <a 
+              href="https://www.amazon.com/live/video/01e0be3c0e1849eaa82b430c96c907b7"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="aspect-video relative block group"
+            >
+              <img 
+                src="/pasted-image-2025-08-17T11-58-34-170Z.png" 
+                alt="How to use Breathin nasal strips"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center transition-opacity duration-300 opacity-75 group-hover:opacity-100">
+                <PlayCircle className="h-20 w-20 text-white opacity-90" />
+              </div>
+            </a>
           </div>
         </div>
 
