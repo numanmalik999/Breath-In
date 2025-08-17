@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Star, Check, Zap, Moon, Wind, Gift } from 'lucide-react';
+import { Star, Check, Zap, Moon, Wind } from 'lucide-react';
 import Testimonials from '../components/Testimonials';
 import FaqAccordion from '../components/FaqAccordion';
 import Newsletter from '../components/Newsletter';
@@ -25,7 +25,6 @@ const LandingPage = () => {
               <Link to="/product/breathin-starter-kit" className="w-full sm:w-auto bg-sageGreen text-white px-8 py-4 rounded-lg font-medium hover:bg-opacity-90 transform hover:scale-105 transition-all duration-200 shadow-lg">
                 Shop The Starter Kit
               </Link>
-              <p className="text-sm text-gray-500 flex items-center"><Gift className="h-4 w-4 mr-2 text-terracotta" /> 10% Off Your First Order</p>
             </div>
           </div>
           <div>
