@@ -5,7 +5,6 @@ import type { Product } from '../data/products';
 import { ShoppingCart, CheckCircle, Star, Minus, Plus, Shield, Truck, RotateCcw } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import { useCart } from '../context/CartContext';
-import FaqAccordion from '../components/FaqAccordion';
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -14,6 +13,7 @@ const ProductPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState('description');
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -150,17 +150,41 @@ const ProductPage = () => {
               </div>
             </div>
             
-            <div className="space-y-2 pt-6">
-              <FaqAccordion title="Description">
-                <div className="prose max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: product.description }} />
-              </FaqAccordion>
-              <FaqAccordion title="Features">
-                <ul className="list-disc list-inside space-y-1 text-gray-600">
-                  {product.features.map((feature, index) => (
-                    <li key={index}>{feature}</li>
-                  ))}
-                </ul>
-              </FaqAccordion>
+            <div className="pt-6 border-t">
+              <div className="flex border-b mb-4">
+                <button
+                  onClick={() => setActiveTab('description')}
+                  className={`px-6 py-2 font-medium transition-colors duration-200 ${
+                    activeTab === 'description'
+                      ? 'border-b-2 border-sageGreen text-sageGreen'
+                      : 'text-gray-500 hover:text-charcoal'
+                  }`}
+                >
+                  Description
+                </button>
+                <button
+                  onClick={() => setActiveTab('features')}
+                  className={`px-6 py-2 font-medium transition-colors duration-200 ${
+                    activeTab === 'features'
+                      ? 'border-b-2 border-sageGreen text-sageGreen'
+                      : 'text-gray-500 hover:text-charcoal'
+                  }`}
+                >
+                  Features
+                </button>
+              </div>
+              <div>
+                {activeTab === 'description' && (
+                  <div className="prose max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: product.description }} />
+                )}
+                {activeTab === 'features' && (
+                  <ul className="list-disc list-inside space-y-1 text-gray-600">
+                    {product.features.map((feature, index) => (
+                      <li key={index}>{feature}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
           </div>
         </div>
