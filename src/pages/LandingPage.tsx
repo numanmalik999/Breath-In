@@ -50,15 +50,14 @@ const LandingPage = () => {
         <div className="max-w-4xl mx-auto mb-16">
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="aspect-video relative">
-              <video 
-                src="d599124f-1234-4321-abcd-1234567890ab.mp4" 
+              <iframe
+                src="https://www.amazon.com/live/embed/01e0be3c0e1849eaa82b430c96c907b7"
+                title="Breathin Product Demonstration"
                 className="w-full h-full"
-                controls 
-                playsInline
-                poster="pasted-image-2025-08-17T11-58-34-170Z.png"
-              >
-                Your browser does not support the video tag.
-              </video>
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
             </div>
           </div>
         </div>
