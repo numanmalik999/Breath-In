@@ -63,7 +63,7 @@ const ProductPage = () => {
 
   return (
     <div className="bg-warmBeige py-12">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-4 space-y-8">
         <div className="bg-white p-8 rounded-2xl shadow-xl grid md:grid-cols-2 gap-12 items-start">
           {/* Image Gallery */}
           <div>
@@ -149,43 +149,43 @@ const ProductPage = () => {
                 <span>30-Day Returns</span>
               </div>
             </div>
-            
-            <div className="pt-6 border-t">
-              <div className="flex border-b mb-4">
-                <button
-                  onClick={() => setActiveTab('description')}
-                  className={`px-6 py-2 font-medium transition-colors duration-200 ${
-                    activeTab === 'description'
-                      ? 'border-b-2 border-sageGreen text-sageGreen'
-                      : 'text-gray-500 hover:text-charcoal'
-                  }`}
-                >
-                  Description
-                </button>
-                <button
-                  onClick={() => setActiveTab('features')}
-                  className={`px-6 py-2 font-medium transition-colors duration-200 ${
-                    activeTab === 'features'
-                      ? 'border-b-2 border-sageGreen text-sageGreen'
-                      : 'text-gray-500 hover:text-charcoal'
-                  }`}
-                >
-                  Features
-                </button>
-              </div>
-              <div>
-                {activeTab === 'description' && (
-                  <div className="prose max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: product.description }} />
-                )}
-                {activeTab === 'features' && (
-                  <ul className="list-disc list-inside space-y-1 text-gray-600">
-                    {product.features.map((feature, index) => (
-                      <li key={index}>{feature}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-8 rounded-2xl shadow-xl">
+          <div className="flex border-b mb-4">
+            <button
+              onClick={() => setActiveTab('description')}
+              className={`px-6 py-2 font-medium transition-colors duration-200 ${
+                activeTab === 'description'
+                  ? 'border-b-2 border-sageGreen text-sageGreen'
+                  : 'text-gray-500 hover:text-charcoal'
+              }`}
+            >
+              Description
+            </button>
+            <button
+              onClick={() => setActiveTab('features')}
+              className={`px-6 py-2 font-medium transition-colors duration-200 ${
+                activeTab === 'features'
+                  ? 'border-b-2 border-sageGreen text-sageGreen'
+                  : 'text-gray-500 hover:text-charcoal'
+              }`}
+            >
+              Features
+            </button>
+          </div>
+          <div>
+            {activeTab === 'description' && (
+              <div className="prose max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: product.description }} />
+            )}
+            {activeTab === 'features' && (
+              <ul className="list-disc list-inside space-y-1 text-gray-600">
+                {product.features.map((feature, index) => (
+                  <li key={index}>{feature}</li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>
