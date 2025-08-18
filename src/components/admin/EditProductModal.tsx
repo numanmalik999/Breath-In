@@ -168,7 +168,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
                 value={description}
                 onChange={setDescription}
                 modules={{ toolbar: { container: [['bold', 'italic'], ['link', 'image']], handlers: { image: imageHandler } } }}
-                className="h-full"
               />
             </div>
           </div>

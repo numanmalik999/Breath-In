@@ -9,5 +9,5 @@
 
 /* When ReactQuill is inside a container with a specific height (like h-48), this ensures the editor part fills the remaining space */
 .h-48 .ql-container {
-  height: calc(100% - 42px); /* 42px is the standard height of the toolbar */
+  height: calc(100% - 42px) !important; /* 42px is the standard height of the toolbar */
 }

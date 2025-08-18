@@ -176,7 +176,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ onClose, onAddProduct
                 value={description}
                 onChange={setDescription}
                 modules={{ toolbar: { container: [['bold', 'italic'], ['link', 'image']], handlers: { image: imageHandler } } }}
-                className="h-full"
               />
             </div>
           </div>
