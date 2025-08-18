@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Search, Download, Edit, Trash2, Package, Truck, CheckCircle, AlertCircle } from 'lucide-react';
+import { Search, Download, Edit, Trash2, Package, Truck, CheckCircle, AlertCircle, Eye } from 'lucide-react';
 import { supabase } from '../../integrations/supabase/client';
 import EditOrderModal from './EditOrderModal';
+import OrderDetailModal from './OrderDetailModal';
 import { formatCurrency } from '../../utils/currency';
 
 export interface Order {
@@ -13,6 +14,12 @@ export interface Order {
   courier: string | null;
   customer_email: string;
   item_count: number;
+  customer_name: string | null;
+  customer_phone: string | null;
+  shipping_address: string | null;
+  shipping_city: string | null;
+  shipping_province: string | null;
+  shipping_postal_code: string | null;
 }
 
 const OrderManagement = () => {
@@ -20,6 +27,7 @@ const OrderManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const fetchOrders = async () => {
@@ -163,7 +171,7 @@ const OrderManagement = () => {
                       <div className="text-sm text-gray-500">{new Date(order.created_at).toLocaleDateString()}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{order.customer_email || 'N/A'}</div>
+                      <div className="text-sm font-medium text-gray-900">{order.customer_name || order.customer_email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.item_count}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatCurrency(order.total_amount)}</td>
@@ -176,6 +184,9 @@ const OrderManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-3">
+                        <button onClick={() => setViewingOrder(order)} className="text-gray-500 hover:text-blue-600 transition-colors duration-200">
+                          <Eye className="h-4 w-4" />
+                        </button>
                         <button onClick={() => setEditingOrder(order)} className="text-gray-500 hover:text-sageGreen transition-colors duration-200">
                           <Edit className="h-4 w-4" />
                         </button>
@@ -197,6 +208,12 @@ const OrderManagement = () => {
           onClose={() => setEditingOrder(null)}
           onSave={handleSaveOrder}
           isSaving={isSaving}
+        />
+      )}
+      {viewingOrder && (
+        <OrderDetailModal
+          order={viewingOrder}
+          onClose={() => setViewingOrder(null)}
         />
       )}
     </div>

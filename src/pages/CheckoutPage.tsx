@@ -102,6 +102,12 @@ const CheckoutPage = () => {
         discount: discount,
         shipping_cost: shippingCost,
         status: 'pending',
+        customer_name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
+        customer_phone: shippingInfo.phoneNumber,
+        shipping_address: `${shippingInfo.address}${shippingInfo.apartment ? `, ${shippingInfo.apartment}` : ''}`,
+        shipping_city: shippingInfo.city,
+        shipping_province: selectedProvince,
+        shipping_postal_code: shippingInfo.postalCode,
       })
       .select()
       .single();
