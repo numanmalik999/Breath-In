@@ -18,6 +18,7 @@ const Settings = () => {
     other: '300',
   });
   const [whatsappSettings, setWhatsappSettings] = useState({ number: '', templateName: '' });
+  const [whatsappContactNumber, setWhatsappContactNumber] = useState('');
 
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -44,6 +45,7 @@ const Settings = () => {
         number: settings.admin_whatsapp_number || '',
         templateName: settings.whatsapp_template_name || 'new_order_admin_notification',
       });
+      setWhatsappContactNumber(settings.whatsapp_contact_number || '');
     }
   }, [settings]);
 
@@ -83,6 +85,7 @@ const Settings = () => {
         updateSetting('shipping_cost_other', shippingSettings.other),
         updateSetting('admin_whatsapp_number', whatsappSettings.number),
         updateSetting('whatsapp_template_name', whatsappSettings.templateName),
+        updateSetting('whatsapp_contact_number', whatsappContactNumber),
       ]);
       setSaveMessage('Settings saved successfully!');
     } catch (error) {
@@ -137,6 +140,14 @@ const Settings = () => {
         <h3 className="text-lg font-medium text-gray-900">Announcement Bar</h3>
         <label className="block text-sm font-medium text-gray-700 mb-2 mt-4">Announcement Text</label>
         <input type="text" value={announcementText} onChange={(e) => setAnnouncementText(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={settingsLoading} />
+      </div>
+      <div className="pt-6 border-t">
+        <h3 className="text-lg font-medium text-gray-900">WhatsApp Button</h3>
+        <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Public Contact Number</label>
+            <input type="text" value={whatsappContactNumber} onChange={(e) => setWhatsappContactNumber(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="e.g., 923001234567" />
+            <p className="text-xs text-gray-500 mt-1">This number is used for the floating WhatsApp button on your site. Include country code without '+' or '00'. Leave blank to hide the button.</p>
+        </div>
       </div>
     </div>
   );
