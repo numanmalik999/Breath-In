@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -32,6 +33,7 @@ function App() {
           <CartProvider>
             <SearchProvider>
               <div className="min-h-screen bg-warmBeige flex flex-col">
+                <Toaster position="top-center" reverseOrder={false} />
                 <AnnouncementBar />
                 <Header />
                 <CartSlider />

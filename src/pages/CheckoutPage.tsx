@@ -6,6 +6,7 @@ import { useSettings } from '../context/SettingsContext';
 import { supabase } from '../integrations/supabase/client';
 import { Lock, Tag, Percent } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
+import toast from 'react-hot-toast';
 
 const provinces = [
   'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 
@@ -13,7 +14,7 @@ const provinces = [
 ];
 
 const CheckoutPage = () => {
-  const { state, getCartTotal, getDiscount, getFinalTotal, setShippingProvince } = useCart();
+  const { state, getCartTotal, getDiscount, getFinalTotal, setShippingProvince, clearCart } = useCart();
   const { session, profile, refreshProfile, loading: authLoading } = useAuth();
   const { settings } = useSettings();
   const navigate = useNavigate();
@@ -65,7 +66,7 @@ const CheckoutPage = () => {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session?.user || state.items.length === 0 || !selectedProvince) {
-      alert('Please fill out all required fields and select a province.');
+      toast.error('Please fill out all required fields and select a province.');
       return;
     }
 
@@ -114,7 +115,7 @@ const CheckoutPage = () => {
 
     if (orderError || !orderData) {
       console.error('Error creating order:', orderError);
-      alert('There was an error placing your order. Please try again.');
+      toast.error('There was an error placing your order. Please try again.');
       setLoading(false);
       return;
     }
@@ -131,7 +132,7 @@ const CheckoutPage = () => {
     if (itemsError) {
       console.error('Error creating order items:', itemsError);
       await supabase.from('orders').delete().eq('id', orderData.id);
-      alert('There was an error saving your order items. Please try again.');
+      toast.error('There was an error saving your order items. Please try again.');
       setLoading(false);
       return;
     }
@@ -140,7 +141,9 @@ const CheckoutPage = () => {
     supabase.functions.invoke('send-order-confirmation', { body: { orderId: orderData.id } }).catch(console.error);
     supabase.functions.invoke('send-whatsapp-order', { body: { orderId: orderData.id } }).catch(console.error);
 
-    navigate(`/order-confirmation/${orderData.id}`);
+    clearCart();
+    toast.success('Order placed successfully!');
+    navigate('/account');
   };
 
   if (authLoading || !session) {
