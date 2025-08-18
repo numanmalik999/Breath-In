@@ -10,7 +10,6 @@ import ShopPage from './pages/ShopPage';
 import ProductPage from './pages/ProductPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
-import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import TrackOrderPage from './pages/TrackOrderPage';
@@ -48,7 +47,6 @@ function App() {
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/cart" element={<CartPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/account" element={<AccountPage />} />
                     <Route path="/track-order" element={<TrackOrderPage />} />

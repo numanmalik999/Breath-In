@@ -7,6 +7,7 @@ import { supabase } from '../integrations/supabase/client';
 import { Lock, Tag, Percent } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import toast from 'react-hot-toast';
+import OrderConfirmationModal, { ConfirmedOrderDetails } from '../components/OrderConfirmationModal';
 
 const provinces = [
   'Punjab', 'Sindh', 'Khyber Pakhtunkhwa', 'Balochistan', 
@@ -19,7 +20,7 @@ const CheckoutPage = () => {
   const { settings } = useSettings();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [isOrderPlaced, setIsOrderPlaced] = useState(false);
+  const [confirmedOrder, setConfirmedOrder] = useState<ConfirmedOrderDetails | null>(null);
   const [selectedProvince, setSelectedProvince] = useState('');
   const [shippingInfo, setShippingInfo] = useState({
     firstName: '',
@@ -34,7 +35,7 @@ const CheckoutPage = () => {
   const whatsappNumber = settings?.whatsapp_contact_number;
 
   useEffect(() => {
-    if (isOrderPlaced) return; // Do not run this effect if an order was just placed
+    if (confirmedOrder) return;
 
     if (!authLoading && !session) {
       navigate('/login?redirect=/checkout');
@@ -42,7 +43,7 @@ const CheckoutPage = () => {
     if (!authLoading && state.items.length === 0) {
       navigate('/cart');
     }
-  }, [session, authLoading, state.items, navigate, isOrderPlaced]);
+  }, [session, authLoading, state.items, navigate, confirmedOrder]);
 
   useEffect(() => {
     if (profile) {
@@ -75,7 +76,6 @@ const CheckoutPage = () => {
 
     setLoading(true);
 
-    // 1. Update user profile with shipping info
     const { error: profileError } = await supabase
       .from('profiles')
       .update({
@@ -85,26 +85,17 @@ const CheckoutPage = () => {
       })
       .eq('id', session.user.id);
 
-    if (profileError) {
-      console.error('Error updating profile:', profileError);
-    } else {
-      await refreshProfile();
-    }
-
-    // 2. Create the order
-    const subtotal = getCartTotal();
-    const discount = getDiscount();
-    const shippingCost = state.shippingCost;
-    const totalAmount = getFinalTotal();
+    if (profileError) console.error('Error updating profile:', profileError);
+    else await refreshProfile();
 
     const { data: orderData, error: orderError } = await supabase
       .from('orders')
       .insert({
         user_id: session.user.id,
-        total_amount: totalAmount,
-        subtotal: subtotal,
-        discount: discount,
-        shipping_cost: shippingCost,
+        total_amount: getFinalTotal(),
+        subtotal: getCartTotal(),
+        discount: getDiscount(),
+        shipping_cost: state.shippingCost,
         status: 'pending',
         customer_name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
         customer_phone: shippingInfo.phoneNumber,
@@ -117,7 +108,6 @@ const CheckoutPage = () => {
       .single();
 
     if (orderError || !orderData) {
-      console.error('Error creating order:', orderError);
       toast.error('There was an error placing your order. Please try again.');
       setLoading(false);
       return;
@@ -133,21 +123,32 @@ const CheckoutPage = () => {
     const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
 
     if (itemsError) {
-      console.error('Error creating order items:', itemsError);
       await supabase.from('orders').delete().eq('id', orderData.id);
       toast.error('There was an error saving your order items. Please try again.');
       setLoading(false);
       return;
     }
 
-    // 3. Send confirmation emails and WhatsApp notification (fire and forget)
     supabase.functions.invoke('send-order-confirmation', { body: { orderId: orderData.id } }).catch(console.error);
     supabase.functions.invoke('send-whatsapp-order', { body: { orderId: orderData.id } }).catch(console.error);
 
-    setIsOrderPlaced(true); // Set the flag to prevent the useEffect from redirecting to /cart
+    const { data: fullOrderData, error: fetchError } = await supabase
+      .from('orders')
+      .select('id, total_amount, created_at, customer_name, order_items(*, products(name, images))')
+      .eq('id', orderData.id)
+      .single();
+
+    if (fetchError || !fullOrderData) {
+      toast.success('Order placed successfully! View it in your account.');
+      await clearCart();
+      setLoading(false);
+      navigate('/account');
+      return;
+    }
+
     await clearCart();
     setLoading(false);
-    navigate(`/order-confirmation/${orderData.id}`);
+    setConfirmedOrder(fullOrderData as ConfirmedOrderDetails);
   };
 
   if (authLoading || !session) {
@@ -245,6 +246,7 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
+      <OrderConfirmationModal order={confirmedOrder} onClose={() => setConfirmedOrder(null)} />
     </div>
   );
 };
