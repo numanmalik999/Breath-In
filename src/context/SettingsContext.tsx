@@ -39,8 +39,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const updateSetting = async (key: string, value: string) => {
     const { error } = await supabase
       .from('settings')
-      .update({ value })
-      .eq('key', key);
+      .upsert({ key, value }, { onConflict: 'key' });
     
     if (error) {
       console.error(`Error updating setting ${key}:`, error);
