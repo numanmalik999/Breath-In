@@ -82,7 +82,7 @@ const OrderConfirmationPage = () => {
               <div className="space-y-3">
                 {order.order_items.map((item, index) => (
                   <div key={index} className="flex items-center space-x-4">
-                    <img src={item.products.images[0]} alt={item.products.name} className="w-16 h-16 object-cover rounded-lg" />
+                    <img src={item.products.images?.[0] || ''} alt={item.products.name} className="w-16 h-16 object-cover rounded-lg" />
                     <div className="flex-1">
                       <p className="font-medium">{item.products.name}</p>
                       <p className="text-sm text-gray-500">Qty: {item.quantity}</p>

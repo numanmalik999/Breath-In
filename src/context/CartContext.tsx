@@ -32,7 +32,7 @@ interface CartContextType {
   addToCart: (product: Product) => Promise<void>;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
+  clearCart: () => Promise<void>;
   getCartTotal: () => number;
   getCartCount: () => number;
   applyCoupon: (coupon: Coupon) => void;
@@ -268,8 +268,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = async () => {
     if (user) {
       const { error } = await supabase.from('user_carts').delete().eq('user_id', user.id);
-      if (!error) await loadCart();
+      if (error) {
+        console.error('Error clearing database cart:', error);
+        toast.error('Could not clear cart items.');
+      }
+      // Always clear local state
+      dispatch({ type: 'CLEAR_CART' });
     } else {
+      // For guests, just clear local state
       dispatch({ type: 'CLEAR_CART' });
     }
   };
