@@ -49,15 +49,15 @@ const LandingPage = () => {
         <div className="max-w-4xl mx-auto mb-16">
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="aspect-video">
-              <video
-                src="/product-video.mp4"
-                title="Breathin Product Demonstration"
+              <iframe 
+                src="https://www.youtube.com/embed/wzYSozVzZrM?si=RQ1Y2-VwJepyu0ih" 
+                title="YouTube video player" 
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                referrerPolicy="strict-origin-when-cross-origin" 
+                allowFullScreen
                 className="w-full h-full"
-                controls
-                autoPlay
-                muted
-                loop
-              ></video>
+              ></iframe>
             </div>
           </div>
         </div>

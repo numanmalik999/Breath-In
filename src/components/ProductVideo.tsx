@@ -4,7 +4,7 @@ const ProductVideo = () => {
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div className="aspect-video relative">
           <iframe
-            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+            src="https://www.youtube.com/embed/wzYSozVzZrM?si=RQ1Y2-VwJepyu0ih"
             title="Breathin Magnetic Nasal Strips - How They Work"
             className="w-full h-full"
             frameBorder="0"
