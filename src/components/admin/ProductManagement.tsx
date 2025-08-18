@@ -2,16 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { getProducts, Product } from '../../data/products';
-import AddProductModal from './AddProductModal';
-import EditProductModal from './EditProductModal';
 import { supabase } from '../../integrations/supabase/client';
-
-type NewProductData = Omit<Product, 'id' | 'slug' | 'rating' | 'reviewCount' | 'category'>;
 
 const ProductManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productList, setProductList] = useState<Product[]>([]);
 
   const fetchProducts = async () => {
@@ -22,73 +16,6 @@ const ProductManagement = () => {
   useEffect(() => {
     fetchProducts();
   }, []);
-
-  const handleCategory = async (categoryName?: string): Promise<string | null> => {
-    if (!categoryName || categoryName.trim() === '') return null;
-
-    const trimmedName = categoryName.trim();
-    const slug = trimmedName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
-
-    let { data: existingCategory } = await supabase.from('categories').select('id').eq('name', trimmedName).single();
-
-    if (existingCategory) {
-      return existingCategory.id;
-    } else {
-      const { data: newCategory, error } = await supabase.from('categories').insert({ name: trimmedName, slug }).select('id').single();
-      if (error) {
-        console.error('Error creating category:', error);
-        return null;
-      }
-      return newCategory.id;
-    }
-  };
-
-  const handleAddProduct = async (productData: NewProductData, categoryName?: string) => {
-    const categoryId = await handleCategory(categoryName);
-    const slug = productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
-    
-    const { error } = await supabase.from('products').insert([{ 
-      ...productData, 
-      slug, 
-      category_id: categoryId,
-      original_price: productData.originalPrice, 
-      short_description: productData.shortDescription, 
-      in_stock: productData.inStock, 
-      review_count: 0, 
-      rating: 0 
-    }]);
-
-    if (error) console.error('Error adding product:', error);
-    else {
-      await fetchProducts();
-      setShowAddModal(false);
-    }
-  };
-
-  const handleUpdateProduct = async (productData: Product, categoryName?: string) => {
-    const categoryId = await handleCategory(categoryName);
-    const { error } = await supabase
-      .from('products')
-      .update({
-        name: productData.name,
-        price: productData.price,
-        original_price: productData.originalPrice,
-        short_description: productData.shortDescription,
-        description: productData.description,
-        features: productData.features,
-        in_stock: productData.inStock,
-        images: productData.images,
-        category_id: categoryId,
-      })
-      .eq('id', productData.id);
-
-    if (error) {
-      console.error('Error updating product:', error);
-    } else {
-      await fetchProducts();
-      setEditingProduct(null);
-    }
-  };
 
   const handleDeleteProduct = async (productId: string, productName: string) => {
     if (window.confirm(`Are you sure you want to delete "${productName}"?`)) {
@@ -109,10 +36,10 @@ const ProductManagement = () => {
           <h2 className="text-2xl font-bold text-gray-900">Product Management</h2>
           <p className="text-gray-600">Manage your product catalog</p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="bg-sageGreen text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-200 flex items-center space-x-2">
+        <Link to="/admin/products/new" className="bg-sageGreen text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-200 flex items-center space-x-2">
           <Plus className="h-4 w-4" />
           <span>Add Product</span>
-        </button>
+        </Link>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -165,7 +92,7 @@ const ProductManagement = () => {
                       <Link to={`/product/${product.slug}`} target="_blank" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
                         <Eye className="h-4 w-4" />
                       </Link>
-                      <button onClick={() => setEditingProduct(product)} className="text-gray-600 hover:text-sageGreen transition-colors duration-200"><Edit className="h-4 w-4" /></button>
+                      <Link to={`/admin/products/edit/${product.slug}`} className="text-gray-600 hover:text-sageGreen transition-colors duration-200"><Edit className="h-4 w-4" /></Link>
                       <button onClick={() => handleDeleteProduct(product.id, product.name)} className="text-gray-600 hover:text-red-600 transition-colors duration-200"><Trash2 className="h-4 w-4" /></button>
                     </div>
                   </td>
@@ -175,9 +102,6 @@ const ProductManagement = () => {
           </table>
         </div>
       </div>
-
-      {showAddModal && <AddProductModal onClose={() => setShowAddModal(false)} onAddProduct={handleAddProduct} />}
-      {editingProduct && <EditProductModal product={editingProduct} onClose={() => setEditingProduct(null)} onSave={handleUpdateProduct} />}
     </div>
   );
 };
