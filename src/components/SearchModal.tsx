@@ -35,6 +35,7 @@ const SearchModal = () => {
       const { data, error } = await supabase
         .from('products')
         .select('*')
+        .eq('is_published', true)
         .or(`name.ilike.%${query.trim()}%,short_description.ilike.%${query.trim()}%`)
         .limit(10);
 

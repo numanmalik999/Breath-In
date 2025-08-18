@@ -20,6 +20,7 @@ export interface Product {
     [key: string]: string;
   };
   inStock: boolean;
+  is_published: boolean;
   rating: number;
   reviewCount: number;
   category?: {
@@ -42,6 +43,7 @@ export const mapProductData = (data: any): Product => ({
   features: data.features,
   specifications: data.specifications,
   inStock: data.in_stock,
+  is_published: data.is_published,
   rating: data.rating,
   reviewCount: data.review_count,
   category: data.categories ? { name: data.categories.name, slug: data.categories.slug } : undefined,
@@ -61,8 +63,12 @@ export const getCategories = async (): Promise<Category[]> => {
   return data;
 };
 
-export const getProducts = async (categorySlug?: string): Promise<Product[]> => {
+export const getProducts = async (categorySlug?: string, includeUnpublished = false): Promise<Product[]> => {
   let query = supabase.from('products').select('*, categories(name, slug)');
+
+  if (!includeUnpublished) {
+    query = query.eq('is_published', true);
+  }
 
   if (categorySlug) {
     const { data: categoryData, error: categoryError } = await supabase
@@ -88,12 +94,17 @@ export const getProducts = async (categorySlug?: string): Promise<Product[]> => 
   return data.map(mapProductData);
 };
 
-export const getProductBySlug = async (slug: string): Promise<Product | null> => {
-  const { data, error } = await supabase
+export const getProductBySlug = async (slug: string, includeUnpublished = false): Promise<Product | null> => {
+  let query = supabase
     .from('products')
     .select('*, categories(name, slug)')
-    .eq('slug', slug)
-    .single();
+    .eq('slug', slug);
+
+  if (!includeUnpublished) {
+    query = query.eq('is_published', true);
+  }
+
+  const { data, error } = await query.single();
 
   if (error) {
     if (error.code !== 'PGRST116') { // Ignore 'not found' errors

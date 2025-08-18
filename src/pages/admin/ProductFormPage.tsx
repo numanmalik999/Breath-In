@@ -20,6 +20,7 @@ const ProductFormPage = () => {
     features: [],
     specifications: {},
     inStock: true,
+    is_published: true,
     categoryId: null,
   });
   const [description, setDescription] = useState('');
@@ -36,7 +37,7 @@ const ProductFormPage = () => {
       setCategories(categoryData);
 
       if (isEditMode && slug) {
-        const productData = await getProductBySlug(slug);
+        const productData = await getProductBySlug(slug, true);
         if (productData) {
           setFormData(productData);
           setDescription(productData.description);
@@ -116,6 +117,7 @@ const ProductFormPage = () => {
       features: formData.features,
       specifications: formData.specifications,
       in_stock: formData.inStock,
+      is_published: formData.is_published,
       category_id: categoryId,
     };
 
@@ -218,9 +220,15 @@ const ProductFormPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Features (one per line)</label>
                 <textarea name="features" rows={4} value={formData.features.join('\n')} onChange={handleFeatureChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
               </div>
-              <div className="flex items-center">
-                <input type="checkbox" name="inStock" checked={formData.inStock} onChange={(e) => setFormData(prev => ({ ...prev, inStock: e.target.checked }))} className="h-4 w-4 text-sageGreen border-gray-300 rounded" />
-                <label className="ml-2 block text-sm text-gray-900">In Stock</label>
+              <div className="flex items-center space-x-6">
+                <div className="flex items-center">
+                  <input id="inStock" type="checkbox" name="inStock" checked={formData.inStock} onChange={(e) => setFormData(prev => ({ ...prev, inStock: e.target.checked }))} className="h-4 w-4 text-sageGreen border-gray-300 rounded" />
+                  <label htmlFor="inStock" className="ml-2 block text-sm text-gray-900">In Stock</label>
+                </div>
+                <div className="flex items-center">
+                  <input id="is_published" type="checkbox" name="is_published" checked={formData.is_published} onChange={(e) => setFormData(prev => ({ ...prev, is_published: e.target.checked }))} className="h-4 w-4 text-sageGreen border-gray-300 rounded" />
+                  <label htmlFor="is_published" className="ml-2 block text-sm text-gray-900">Published</label>
+                </div>
               </div>
             </div>
             <div className="p-4 flex justify-end space-x-2 border-t bg-gray-50 rounded-b-lg">
