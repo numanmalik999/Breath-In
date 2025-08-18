@@ -3,8 +3,11 @@ import { Star, Check, Zap, Moon, Wind } from 'lucide-react';
 import Testimonials from '../components/Testimonials';
 import FaqAccordion from '../components/FaqAccordion';
 import Newsletter from '../components/Newsletter';
+import { useSettings } from '../context/SettingsContext';
 
 const LandingPage = () => {
+  const { settings } = useSettings();
+
   return (
     <>
       {/* --- Hero Section --- */}
@@ -16,10 +19,10 @@ const LandingPage = () => {
             </div>
             <p className="text-sm text-charcoal mb-4">Over 10,000+ Happy Sleepers</p>
             <h1 className="text-4xl md:text-5xl font-serif text-charcoal mb-6">
-              The Last Nasal Strip You'll Ever Need.
+              {settings?.homepage_hero_title || "The Last Nasal Strip You'll Ever Need."}
             </h1>
             <p className="text-lg text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0">
-              Experience instant, drug-free relief from nasal congestion and snoring with our revolutionary magnetic strips. Breathe freely all night, every night.
+              {settings?.homepage_hero_subtitle || "Experience instant, drug-free relief from nasal congestion and snoring with our revolutionary magnetic strips. Breathe freely all night, every night."}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <Link to="/product/breathin-starter-kit" className="w-full sm:w-auto bg-sageGreen text-white px-8 py-4 rounded-lg font-medium hover:bg-opacity-90 transform hover:scale-105 transition-all duration-200 shadow-lg">
@@ -40,9 +43,9 @@ const LandingPage = () => {
       {/* --- How It Works Section --- */}
       <section className="py-20 px-4">
         <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-serif text-charcoal mb-4">How To Use Breathin</h2>
+          <h2 className="text-3xl md:text-4xl font-serif text-charcoal mb-4">{settings?.homepage_howto_title || "How To Use Breathin"}</h2>
           <p className="text-lg text-gray-600 mb-16">
-            Traditional nasal strips use sticky, irritating adhesives. Breathin uses a revolutionary magnetic system that's comfortable, reusable, and more effective. Watch the video to see it in action.
+            {settings?.homepage_howto_subtitle || "Traditional nasal strips use sticky, irritating adhesives. Breathin uses a revolutionary magnetic system that's comfortable, reusable, and more effective. Watch the video to see it in action."}
           </p>
         </div>
 
@@ -50,7 +53,7 @@ const LandingPage = () => {
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="aspect-video">
               <iframe 
-                src="https://www.youtube.com/embed/wzYSozVzZrM?si=RQ1Y2-VwJepyu0ih" 
+                src={settings?.homepage_video_url || "https://www.youtube.com/embed/wzYSozVzZrM?si=RQ1Y2-VwJepyu0ih"}
                 title="YouTube video player" 
                 frameBorder="0" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
@@ -98,7 +101,7 @@ const LandingPage = () => {
             />
           </div>
           <div className="space-y-8">
-            <h2 className="text-3xl md:text-4xl font-serif text-charcoal">Breathe Easy, Live Better.</h2>
+            <h2 className="text-3xl md:text-4xl font-serif text-charcoal">{settings?.homepage_benefits_title || "Breathe Easy, Live Better."}</h2>
             <ul className="space-y-4">
               <li className="flex items-start space-x-3">
                 <Check className="h-6 w-6 text-green-500 mt-1 flex-shrink-0" />

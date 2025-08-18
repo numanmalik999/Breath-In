@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Globe, Shield, Bell, CreditCard, Loader2, Truck, UploadCloud, Trash2 } from 'lucide-react';
+import { Save, Globe, Shield, Bell, CreditCard, Loader2, Truck, UploadCloud, Trash2, LayoutTemplate } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { supabase } from '../../integrations/supabase/client';
 import PlaceholderContent from './PlaceholderContent';
@@ -20,6 +20,14 @@ const Settings = () => {
   });
   const [whatsappSettings, setWhatsappSettings] = useState({ number: '', templateName: '' });
   const [whatsappContactNumber, setWhatsappContactNumber] = useState('');
+  const [homepageContent, setHomepageContent] = useState({
+    heroTitle: '',
+    heroSubtitle: '',
+    howToTitle: '',
+    howToSubtitle: '',
+    videoUrl: '',
+    benefitsTitle: '',
+  });
 
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -52,6 +60,14 @@ const Settings = () => {
         templateName: settings.whatsapp_template_name || 'new_order_admin_notification',
       });
       setWhatsappContactNumber(settings.whatsapp_contact_number || '');
+      setHomepageContent({
+        heroTitle: settings.homepage_hero_title || "The Last Nasal Strip You'll Ever Need.",
+        heroSubtitle: settings.homepage_hero_subtitle || "Experience instant, drug-free relief from nasal congestion and snoring with our revolutionary magnetic strips. Breathe freely all night, every night.",
+        howToTitle: settings.homepage_howto_title || "How To Use Breathin",
+        howToSubtitle: settings.homepage_howto_subtitle || "Traditional nasal strips use sticky, irritating adhesives. Breathin uses a revolutionary magnetic system that's comfortable, reusable, and more effective. Watch the video to see it in action.",
+        videoUrl: settings.homepage_video_url || "https://www.youtube.com/embed/wzYSozVzZrM?si=RQ1Y2-VwJepyu0ih",
+        benefitsTitle: settings.homepage_benefits_title || "Breathe Easy, Live Better.",
+      });
     }
   }, [settings]);
 
@@ -95,6 +111,12 @@ const Settings = () => {
         updateSetting('admin_whatsapp_number', whatsappSettings.number),
         updateSetting('whatsapp_template_name', whatsappSettings.templateName),
         updateSetting('whatsapp_contact_number', whatsappContactNumber),
+        updateSetting('homepage_hero_title', homepageContent.heroTitle),
+        updateSetting('homepage_hero_subtitle', homepageContent.heroSubtitle),
+        updateSetting('homepage_howto_title', homepageContent.howToTitle),
+        updateSetting('homepage_howto_subtitle', homepageContent.howToSubtitle),
+        updateSetting('homepage_video_url', homepageContent.videoUrl),
+        updateSetting('homepage_benefits_title', homepageContent.benefitsTitle),
       ]);
       setSaveMessage('Settings saved successfully!');
     } catch (error) {
@@ -106,6 +128,7 @@ const Settings = () => {
 
   const sections = [
     { id: 'general', label: 'General', icon: Globe },
+    { id: 'homepage', label: 'Homepage', icon: LayoutTemplate },
     { id: 'shipping', label: 'Shipping', icon: Truck },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'security', label: 'Security', icon: Shield },
@@ -178,6 +201,48 @@ const Settings = () => {
     </div>
   );
 
+  const renderHomepageSettings = () => (
+    <div className="space-y-6">
+      <div className="pt-6 border-t">
+        <h3 className="text-lg font-medium text-gray-900">Hero Section</h3>
+        <div className="mt-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+            <input type="text" value={homepageContent.heroTitle} onChange={(e) => setHomepageContent(prev => ({ ...prev, heroTitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+            <textarea value={homepageContent.heroSubtitle} onChange={(e) => setHomepageContent(prev => ({ ...prev, heroSubtitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={3}></textarea>
+          </div>
+        </div>
+      </div>
+      <div className="pt-6 border-t">
+        <h3 className="text-lg font-medium text-gray-900">"How To Use" Section</h3>
+        <div className="mt-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+            <input type="text" value={homepageContent.howToTitle} onChange={(e) => setHomepageContent(prev => ({ ...prev, howToTitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+            <textarea value={homepageContent.howToSubtitle} onChange={(e) => setHomepageContent(prev => ({ ...prev, howToSubtitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={3}></textarea>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">YouTube Video URL</label>
+            <input type="text" value={homepageContent.videoUrl} onChange={(e) => setHomepageContent(prev => ({ ...prev, videoUrl: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          </div>
+        </div>
+      </div>
+      <div className="pt-6 border-t">
+        <h3 className="text-lg font-medium text-gray-900">Benefits Section</h3>
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+          <input type="text" value={homepageContent.benefitsTitle} onChange={(e) => setHomepageContent(prev => ({ ...prev, benefitsTitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        </div>
+      </div>
+    </div>
+  );
+
   const renderShippingSettings = () => (
     <div className="space-y-6">
       <h3 className="text-lg font-medium text-gray-900">Shipping Rates</h3>
@@ -231,6 +296,7 @@ const Settings = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'general': return renderGeneralSettings();
+      case 'homepage': return renderHomepageSettings();
       case 'shipping': return renderShippingSettings();
       case 'notifications': return renderNotificationSettings();
       case 'security': return <PlaceholderContent title="Security Settings" message="This section is under development. Future options will include managing login providers and password policies." />;
