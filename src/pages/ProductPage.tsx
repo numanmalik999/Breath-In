@@ -30,9 +30,9 @@ const ProductPage = () => {
     fetchProduct();
   }, [slug]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
-    addToCart({
+    await addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
@@ -41,9 +41,9 @@ const ProductPage = () => {
     });
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!product) return;
-    addToCart({
+    await addToCart({
       id: product.id,
       name: product.name,
       price: product.price,

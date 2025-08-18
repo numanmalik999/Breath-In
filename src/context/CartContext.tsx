@@ -2,6 +2,7 @@ import { createContext, useContext, useReducer, ReactNode, useEffect, useState, 
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { useSettings } from './SettingsContext';
+import toast from 'react-hot-toast';
 
 interface Product {
   id: string;
@@ -28,7 +29,7 @@ interface CartState {
 interface CartContextType {
   state: CartState;
   loading: boolean;
-  addToCart: (product: Product) => void;
+  addToCart: (product: Product) => Promise<void>;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -61,22 +62,25 @@ function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case 'SET_CART':
       return { ...state, items: action.items };
-    case 'ADD_TO_CART':
-      const existingItem = state.items.find(item => item.id === action.product.id);
-      if (existingItem) {
+    case 'ADD_TO_CART': {
+      const existingItemIndex = state.items.findIndex(item => item.id === action.product.id);
+      const quantityToAdd = action.product.quantity || 1;
+
+      if (existingItemIndex > -1) {
+        const newItems = [...state.items];
+        const existingItem = newItems[existingItemIndex];
+        newItems[existingItemIndex] = {
+          ...existingItem,
+          quantity: (existingItem.quantity || 0) + quantityToAdd,
+        };
+        return { ...state, items: newItems };
+      } else {
         return {
           ...state,
-          items: state.items.map(item =>
-            item.id === action.product.id
-              ? { ...item, quantity: (item.quantity || 1) + 1 }
-              : item
-          ),
+          items: [...state.items, { ...action.product, quantity: quantityToAdd }],
         };
       }
-      return {
-        ...state,
-        items: [...state.items, { ...action.product, quantity: 1 }],
-      };
+    }
     case 'REMOVE_FROM_CART':
       return {
         ...state,
@@ -206,6 +210,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [state.items, user, authLoading]);
 
   const addToCart = async (product: Product) => {
+    const quantityToAdd = product.quantity || 1;
     if (user) {
       const { data: existingItem, error: fetchError } = await supabase
         .from('user_carts')
@@ -216,17 +221,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       if (fetchError && fetchError.code !== 'PGRST116') { // Ignore 'not found' error
         console.error('Error checking cart item:', fetchError);
+        toast.error('Could not add item to cart.');
         return;
       }
 
       const { error } = await supabase.from('user_carts').upsert({
         user_id: user.id,
         product_id: product.id,
-        quantity: (existingItem?.quantity || 0) + 1,
+        quantity: (existingItem?.quantity || 0) + quantityToAdd,
       });
-      if (!error) await loadCart();
+
+      if (!error) {
+        await loadCart();
+        toast.success(`${product.name} added to cart!`);
+      } else {
+        toast.error('Could not add item to cart.');
+      }
     } else {
       dispatch({ type: 'ADD_TO_CART', product });
+      toast.success(`${product.name} added to cart!`);
     }
   };
 
