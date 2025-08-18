@@ -160,7 +160,12 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Full Description</label>
-            <div className="h-48">
+            <div className="h-48 quill-container-edit">
+              <style>{`
+                .quill-container-edit .ql-container {
+                  height: calc(100% - 42px);
+                }
+              `}</style>
               <ReactQuill
                 key={product.id}
                 ref={quillRef}
@@ -168,7 +173,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
                 value={description}
                 onChange={setDescription}
                 modules={{ toolbar: { container: [['bold', 'italic'], ['link', 'image']], handlers: { image: imageHandler } } }}
-                style={{ height: 'calc(100% - 42px)' }}
+                className="h-full"
               />
             </div>
           </div>
