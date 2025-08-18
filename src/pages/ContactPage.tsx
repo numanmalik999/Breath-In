@@ -40,10 +40,10 @@ const ContactPage = () => {
       <div className="max-w-5xl mx-auto px-4 py-16">
         <section className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-serif text-charcoal mb-4">
-            Get in Touch
+            {settings?.contact_page_title || 'Get in Touch'}
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            We'd love to hear from you! Whether you have a question about our products, need assistance, or just want to say hello, please feel free to reach out.
+            {settings?.contact_page_subtitle || "We'd love to hear from you! Whether you have a question about our products, need assistance, or just want to say hello, please feel free to reach out."}
           </p>
         </section>
 

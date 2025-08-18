@@ -1,16 +1,19 @@
 import { Leaf, Heart, Users, Target } from 'lucide-react';
+import { useSettings } from '../context/SettingsContext';
 
 const AboutPage = () => {
+  const { settings } = useSettings();
+
   return (
     <div className="bg-offWhite">
       <div className="max-w-5xl mx-auto px-4 py-16">
         {/* Hero Section */}
         <section className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-serif text-charcoal mb-4">
-            About Breathin
+            {settings?.about_page_title || 'About Breathin'}
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            We believe that better breathing leads to a better life. Discover the story and the mission behind our innovative wellness solutions.
+            {settings?.about_page_subtitle || 'We believe that better breathing leads to a better life. Discover the story and the mission behind our innovative wellness solutions.'}
           </p>
         </section>
 
@@ -19,10 +22,10 @@ const AboutPage = () => {
           <div className="space-y-6">
             <h2 className="text-3xl font-serif text-charcoal">Our Story</h2>
             <p className="text-gray-700 leading-relaxed">
-              At Breathin, we started with a simple observation: the quality of our breath has a profound impact on our overall well-being, especially our sleep. Frustrated by the lack of comfortable and effective solutions for nasal congestion, we set out to create something revolutionary.
+              {settings?.about_page_story_p1 || "At Breathin, we started with a simple observation: the quality of our breath has a profound impact on our overall well-being, especially our sleep. Frustrated by the lack of comfortable and effective solutions for nasal congestion, we set out to create something revolutionary."}
             </p>
             <p className="text-gray-700 leading-relaxed">
-              Our journey led us to develop innovative magnetic nasal strips that gently open nasal passages without harsh adhesives or discomfort. It’s a simple idea powered by smart technology, designed to help you experience the transformative difference that effortless breathing can make.
+              {settings?.about_page_story_p2 || "Our journey led us to develop innovative magnetic nasal strips that gently open nasal passages without harsh adhesives or discomfort. It’s a simple idea powered by smart technology, designed to help you experience the transformative difference that effortless breathing can make."}
             </p>
           </div>
           <div className="relative">

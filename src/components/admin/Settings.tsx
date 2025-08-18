@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Globe, Shield, Bell, CreditCard, Loader2, Truck, UploadCloud, Trash2, LayoutTemplate } from 'lucide-react';
+import { Save, Globe, Shield, Bell, CreditCard, Loader2, Truck, UploadCloud, Trash2, LayoutTemplate, Info, Mail, Package, FileText } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { supabase } from '../../integrations/supabase/client';
 import PlaceholderContent from './PlaceholderContent';
@@ -13,21 +13,16 @@ const Settings = () => {
   const [siteInfo, setSiteInfo] = useState({ name: '', logoUrl: '', description: '' });
   const [contactInfo, setContactInfo] = useState({ email: '', phone: '', address: '' });
   const [emailSettings, setEmailSettings] = useState({ admin: '', sender: '' });
-  const [shippingSettings, setShippingSettings] = useState({
-    threshold: '2500',
-    punjab: '200',
-    other: '300',
-  });
+  const [shippingSettings, setShippingSettings] = useState({ threshold: '2500', punjab: '200', other: '300' });
   const [whatsappSettings, setWhatsappSettings] = useState({ number: '', templateName: '' });
   const [whatsappContactNumber, setWhatsappContactNumber] = useState('');
-  const [homepageContent, setHomepageContent] = useState({
-    heroTitle: '',
-    heroSubtitle: '',
-    howToTitle: '',
-    howToSubtitle: '',
-    videoUrl: '',
-    benefitsTitle: '',
-  });
+  
+  // Page Content States
+  const [homepageContent, setHomepageContent] = useState({ heroTitle: '', heroSubtitle: '', howToTitle: '', howToSubtitle: '', videoUrl: '', benefitsTitle: '' });
+  const [aboutPageContent, setAboutPageContent] = useState({ title: '', subtitle: '', storyText1: '', storyText2: '' });
+  const [contactPageContent, setContactPageContent] = useState({ title: '', subtitle: '' });
+  const [shippingPageContent, setShippingPageContent] = useState({ title: '', subtitle: '', processingText: '', ratesText: '', returnsText: '' });
+  const [trackOrderPageContent, setTrackOrderPageContent] = useState({ title: '', subtitle: '' });
 
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -35,31 +30,16 @@ const Settings = () => {
 
   useEffect(() => {
     if (settings) {
+      // General Settings
       setAnnouncementText(settings.announcement_text || '');
-      setSiteInfo({
-        name: settings.store_name || 'Breathin',
-        logoUrl: settings.store_logo_url || '',
-        description: settings.store_description || '',
-      });
-      setContactInfo({
-        email: settings.contact_email || '',
-        phone: settings.contact_phone || '',
-        address: settings.contact_address || '',
-      });
-      setEmailSettings({
-        admin: settings.admin_notification_email || '',
-        sender: settings.sender_email || '',
-      });
-      setShippingSettings({
-        threshold: settings.shipping_free_threshold || '2500',
-        punjab: settings.shipping_cost_punjab || '200',
-        other: settings.shipping_cost_other || '300',
-      });
-      setWhatsappSettings({
-        number: settings.admin_whatsapp_number || '',
-        templateName: settings.whatsapp_template_name || 'new_order_admin_notification',
-      });
+      setSiteInfo({ name: settings.store_name || 'Breathin', logoUrl: settings.store_logo_url || '', description: settings.store_description || '' });
+      setContactInfo({ email: settings.contact_email || '', phone: settings.contact_phone || '', address: settings.contact_address || '' });
+      setEmailSettings({ admin: settings.admin_notification_email || '', sender: settings.sender_email || '' });
+      setShippingSettings({ threshold: settings.shipping_free_threshold || '2500', punjab: settings.shipping_cost_punjab || '200', other: settings.shipping_cost_other || '300' });
+      setWhatsappSettings({ number: settings.admin_whatsapp_number || '', templateName: settings.whatsapp_template_name || 'new_order_admin_notification' });
       setWhatsappContactNumber(settings.whatsapp_contact_number || '');
+      
+      // Page Content
       setHomepageContent({
         heroTitle: settings.homepage_hero_title || "The Last Nasal Strip You'll Ever Need.",
         heroSubtitle: settings.homepage_hero_subtitle || "Experience instant, drug-free relief from nasal congestion and snoring with our revolutionary magnetic strips. Breathe freely all night, every night.",
@@ -68,25 +48,42 @@ const Settings = () => {
         videoUrl: settings.homepage_video_url || "https://www.youtube.com/embed/wzYSozVzZrM?si=RQ1Y2-VwJepyu0ih",
         benefitsTitle: settings.homepage_benefits_title || "Breathe Easy, Live Better.",
       });
+      setAboutPageContent({
+        title: settings.about_page_title || "About Breathin",
+        subtitle: settings.about_page_subtitle || "We believe that better breathing leads to a better life. Discover the story and the mission behind our innovative wellness solutions.",
+        storyText1: settings.about_page_story_p1 || "At Breathin, we started with a simple observation: the quality of our breath has a profound impact on our overall well-being, especially our sleep. Frustrated by the lack of comfortable and effective solutions for nasal congestion, we set out to create something revolutionary.",
+        storyText2: settings.about_page_story_p2 || "Our journey led us to develop innovative magnetic nasal strips that gently open nasal passages without harsh adhesives or discomfort. It’s a simple idea powered by smart technology, designed to help you experience the transformative difference that effortless breathing can make.",
+      });
+      setContactPageContent({
+        title: settings.contact_page_title || "Get in Touch",
+        subtitle: settings.contact_page_subtitle || "We'd love to hear from you! Whether you have a question about our products, need assistance, or just want to say hello, please feel free to reach out.",
+      });
+      setShippingPageContent({
+        title: settings.shipping_page_title || "Shipping & Returns",
+        subtitle: settings.shipping_page_subtitle || "Everything you need to know about our shipping process and how to make a return.",
+        processingText: settings.shipping_processing_text || "Orders are processed within 1-2 business days. You will receive a notification when your order has shipped.",
+        ratesText: settings.shipping_rates_text || "Shipping charges for your order will be calculated and displayed at checkout.",
+        returnsText: settings.shipping_returns_text || "We have a 30-day return policy, which means you have 30 days after receiving your item to request a return.",
+      });
+      setTrackOrderPageContent({
+        title: settings.track_order_page_title || "Track Your Order",
+        subtitle: settings.track_order_page_subtitle || "Enter your tracking number below to see the status of your shipment.",
+      });
     }
   }, [settings]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setIsUploadingLogo(true);
     const fileName = `public/logo/${Date.now()}-${file.name}`;
     const { data, error } = await supabase.storage.from('product-images').upload(fileName, file);
-    
     if (error) {
       console.error('Error uploading logo:', error);
       setSaveMessage('Error uploading logo.');
     } else {
       const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(data.path);
-      if (publicUrl) {
-        setSiteInfo(prev => ({ ...prev, logoUrl: publicUrl }));
-      }
+      if (publicUrl) setSiteInfo(prev => ({ ...prev, logoUrl: publicUrl }));
     }
     setIsUploadingLogo(false);
   };
@@ -96,6 +93,7 @@ const Settings = () => {
     setSaveMessage('');
     try {
       await Promise.all([
+        // General
         updateSetting('announcement_text', announcementText),
         updateSetting('store_name', siteInfo.name),
         updateSetting('store_logo_url', siteInfo.logoUrl),
@@ -103,20 +101,36 @@ const Settings = () => {
         updateSetting('contact_email', contactInfo.email),
         updateSetting('contact_phone', contactInfo.phone),
         updateSetting('contact_address', contactInfo.address),
-        updateSetting('admin_notification_email', emailSettings.admin),
-        updateSetting('sender_email', emailSettings.sender),
-        updateSetting('shipping_free_threshold', shippingSettings.threshold),
-        updateSetting('shipping_cost_punjab', shippingSettings.punjab),
-        updateSetting('shipping_cost_other', shippingSettings.other),
-        updateSetting('admin_whatsapp_number', whatsappSettings.number),
-        updateSetting('whatsapp_template_name', whatsappSettings.templateName),
         updateSetting('whatsapp_contact_number', whatsappContactNumber),
+        // Homepage
         updateSetting('homepage_hero_title', homepageContent.heroTitle),
         updateSetting('homepage_hero_subtitle', homepageContent.heroSubtitle),
         updateSetting('homepage_howto_title', homepageContent.howToTitle),
         updateSetting('homepage_howto_subtitle', homepageContent.howToSubtitle),
         updateSetting('homepage_video_url', homepageContent.videoUrl),
         updateSetting('homepage_benefits_title', homepageContent.benefitsTitle),
+        // Other Pages
+        updateSetting('about_page_title', aboutPageContent.title),
+        updateSetting('about_page_subtitle', aboutPageContent.subtitle),
+        updateSetting('about_page_story_p1', aboutPageContent.storyText1),
+        updateSetting('about_page_story_p2', aboutPageContent.storyText2),
+        updateSetting('contact_page_title', contactPageContent.title),
+        updateSetting('contact_page_subtitle', contactPageContent.subtitle),
+        updateSetting('shipping_page_title', shippingPageContent.title),
+        updateSetting('shipping_page_subtitle', shippingPageContent.subtitle),
+        updateSetting('shipping_processing_text', shippingPageContent.processingText),
+        updateSetting('shipping_rates_text', shippingPageContent.ratesText),
+        updateSetting('shipping_returns_text', shippingPageContent.returnsText),
+        updateSetting('track_order_page_title', trackOrderPageContent.title),
+        updateSetting('track_order_page_subtitle', trackOrderPageContent.subtitle),
+        // Shipping & Notifications
+        updateSetting('shipping_free_threshold', shippingSettings.threshold),
+        updateSetting('shipping_cost_punjab', shippingSettings.punjab),
+        updateSetting('shipping_cost_other', shippingSettings.other),
+        updateSetting('admin_notification_email', emailSettings.admin),
+        updateSetting('sender_email', emailSettings.sender),
+        updateSetting('admin_whatsapp_number', whatsappSettings.number),
+        updateSetting('whatsapp_template_name', whatsappSettings.templateName),
       ]);
       setSaveMessage('Settings saved successfully!');
     } catch (error) {
@@ -129,7 +143,11 @@ const Settings = () => {
   const sections = [
     { id: 'general', label: 'General', icon: Globe },
     { id: 'homepage', label: 'Homepage', icon: LayoutTemplate },
-    { id: 'shipping', label: 'Shipping', icon: Truck },
+    { id: 'about', label: 'About Page', icon: Info },
+    { id: 'contact', label: 'Contact Page', icon: Mail },
+    { id: 'shipping_returns', label: 'Shipping/Returns Page', icon: FileText },
+    { id: 'track_order', label: 'Track Order Page', icon: Package },
+    { id: 'shipping_rates', label: 'Shipping Rates', icon: Truck },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'payments', label: 'Payments', icon: CreditCard },
@@ -203,17 +221,15 @@ const Settings = () => {
 
   const renderHomepageSettings = () => (
     <div className="space-y-6">
-      <div className="pt-6 border-t">
-        <h3 className="text-lg font-medium text-gray-900">Hero Section</h3>
-        <div className="mt-4 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-            <input type="text" value={homepageContent.heroTitle} onChange={(e) => setHomepageContent(prev => ({ ...prev, heroTitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
-            <textarea value={homepageContent.heroSubtitle} onChange={(e) => setHomepageContent(prev => ({ ...prev, heroSubtitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={3}></textarea>
-          </div>
+      <h3 className="text-lg font-medium text-gray-900">Hero Section</h3>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+          <input type="text" value={homepageContent.heroTitle} onChange={(e) => setHomepageContent(prev => ({ ...prev, heroTitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+          <textarea value={homepageContent.heroSubtitle} onChange={(e) => setHomepageContent(prev => ({ ...prev, heroSubtitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={3}></textarea>
         </div>
       </div>
       <div className="pt-6 border-t">
@@ -243,7 +259,96 @@ const Settings = () => {
     </div>
   );
 
-  const renderShippingSettings = () => (
+  const renderAboutPageSettings = () => (
+    <div className="space-y-6">
+      <h3 className="text-lg font-medium text-gray-900">Header</h3>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+        <input type="text" value={aboutPageContent.title} onChange={(e) => setAboutPageContent(prev => ({ ...prev, title: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+        <textarea value={aboutPageContent.subtitle} onChange={(e) => setAboutPageContent(prev => ({ ...prev, subtitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={3}></textarea>
+      </div>
+      <div className="pt-6 border-t">
+        <h3 className="text-lg font-medium text-gray-900">Our Story Section</h3>
+        <div className="mt-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Paragraph 1</label>
+            <textarea value={aboutPageContent.storyText1} onChange={(e) => setAboutPageContent(prev => ({ ...prev, storyText1: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={4}></textarea>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Paragraph 2</label>
+            <textarea value={aboutPageContent.storyText2} onChange={(e) => setAboutPageContent(prev => ({ ...prev, storyText2: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={4}></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderContactPageSettings = () => (
+    <div className="space-y-6">
+      <h3 className="text-lg font-medium text-gray-900">Header</h3>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+        <input type="text" value={contactPageContent.title} onChange={(e) => setContactPageContent(prev => ({ ...prev, title: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+        <textarea value={contactPageContent.subtitle} onChange={(e) => setContactPageContent(prev => ({ ...prev, subtitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={3}></textarea>
+      </div>
+    </div>
+  );
+
+  const renderShippingReturnsPageSettings = () => (
+    <div className="space-y-6">
+      <h3 className="text-lg font-medium text-gray-900">Header</h3>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+        <input type="text" value={shippingPageContent.title} onChange={(e) => setShippingPageContent(prev => ({ ...prev, title: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+        <textarea value={shippingPageContent.subtitle} onChange={(e) => setShippingPageContent(prev => ({ ...prev, subtitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={3}></textarea>
+      </div>
+      <div className="pt-6 border-t">
+        <h3 className="text-lg font-medium text-gray-900">Shipping Policy</h3>
+        <div className="mt-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Processing Time Text</label>
+            <textarea value={shippingPageContent.processingText} onChange={(e) => setShippingPageContent(prev => ({ ...prev, processingText: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={2}></textarea>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Rates Text</label>
+            <textarea value={shippingPageContent.ratesText} onChange={(e) => setShippingPageContent(prev => ({ ...prev, ratesText: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={2}></textarea>
+          </div>
+        </div>
+      </div>
+      <div className="pt-6 border-t">
+        <h3 className="text-lg font-medium text-gray-900">Return Policy</h3>
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Main Return Policy Text</label>
+          <textarea value={shippingPageContent.returnsText} onChange={(e) => setShippingPageContent(prev => ({ ...prev, returnsText: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={3}></textarea>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderTrackOrderPageSettings = () => (
+    <div className="space-y-6">
+      <h3 className="text-lg font-medium text-gray-900">Header</h3>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+        <input type="text" value={trackOrderPageContent.title} onChange={(e) => setTrackOrderPageContent(prev => ({ ...prev, title: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+        <textarea value={trackOrderPageContent.subtitle} onChange={(e) => setTrackOrderPageContent(prev => ({ ...prev, subtitle: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={3}></textarea>
+      </div>
+    </div>
+  );
+
+  const renderShippingRatesSettings = () => (
     <div className="space-y-6">
       <h3 className="text-lg font-medium text-gray-900">Shipping Rates</h3>
       <div>
@@ -297,7 +402,11 @@ const Settings = () => {
     switch (activeSection) {
       case 'general': return renderGeneralSettings();
       case 'homepage': return renderHomepageSettings();
-      case 'shipping': return renderShippingSettings();
+      case 'about': return renderAboutPageSettings();
+      case 'contact': return renderContactPageSettings();
+      case 'shipping_returns': return renderShippingReturnsPageSettings();
+      case 'track_order': return renderTrackOrderPageSettings();
+      case 'shipping_rates': return renderShippingRatesSettings();
       case 'notifications': return renderNotificationSettings();
       case 'security': return <PlaceholderContent title="Security Settings" message="This section is under development. Future options will include managing login providers and password policies." />;
       case 'payments': return <PlaceholderContent title="Payment Settings" message="This section is under development. Future options will allow you to integrate with payment gateways." />;

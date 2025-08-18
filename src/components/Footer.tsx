@@ -8,9 +8,9 @@ const Footer = () => {
   return (
     <footer className="bg-charcoal text-white py-16">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Brand Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 md:col-span-1">
             <div className="text-2xl font-serif font-semibold text-sageGreen">
               Breathin
             </div>
@@ -24,23 +24,13 @@ const Footer = () => {
             </div>
           </div>
           
-          {/* Quick Links */}
+          {/* Explore Links */}
           <div>
-            <h3 className="font-semibold mb-4">Quick Links</h3>
+            <h3 className="font-semibold mb-4">Explore</h3>
             <ul className="space-y-2 text-sm">
               <li><Link to="/about" className="text-gray-300 hover:text-sageGreen transition-colors duration-200">About Us</Link></li>
               <li><Link to="/contact" className="text-gray-300 hover:text-sageGreen transition-colors duration-200">Contact</Link></li>
-              <li><a href="#" className="text-gray-300 hover:text-sageGreen transition-colors duration-200">FAQ</a></li>
-            </ul>
-          </div>
-          
-          {/* Customer Service */}
-          <div>
-            <h3 className="font-semibold mb-4">Customer Service</h3>
-            <ul className="space-y-2 text-sm">
               <li><Link to="/shipping-returns" className="text-gray-300 hover:text-sageGreen transition-colors duration-200">Shipping & Returns</Link></li>
-              <li><a href="#" className="text-gray-300 hover:text-sageGreen transition-colors duration-200">Size Guide</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-sageGreen transition-colors duration-200">Care Instructions</a></li>
               <li><Link to="/track-order" className="text-gray-300 hover:text-sageGreen transition-colors duration-200">Track Your Order</Link></li>
             </ul>
           </div>

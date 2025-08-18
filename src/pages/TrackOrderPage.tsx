@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { Search, Truck, Loader2 } from 'lucide-react';
+import { useSettings } from '../context/SettingsContext';
 
 const courierTrackingUrls: { [key: string]: string } = {
   'TCS': 'https://www.tcsexpress.com/tracking?cn=',
@@ -9,6 +10,7 @@ const courierTrackingUrls: { [key: string]: string } = {
 };
 
 const TrackOrderPage = () => {
+  const { settings } = useSettings();
   const [trackingNumber, setTrackingNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -57,10 +59,10 @@ const TrackOrderPage = () => {
         <section className="text-center mb-12">
           <Truck className="mx-auto h-12 w-12 text-sageGreen mb-4" />
           <h1 className="text-4xl md:text-5xl font-serif text-charcoal mb-4">
-            Track Your Order
+            {settings?.track_order_page_title || 'Track Your Order'}
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Enter your tracking number below to see the status of your shipment.
+            {settings?.track_order_page_subtitle || 'Enter your tracking number below to see the status of your shipment.'}
           </p>
         </section>
 
