@@ -8,7 +8,7 @@ import { getCategories, Category } from '../data/products';
 
 const Header = () => {
   const { getCartCount, openCart } = useCart();
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const { openSearch } = useSearch();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isCategoryMenuOpen, setCategoryMenuOpen] = useState(false);
@@ -35,6 +35,9 @@ const Header = () => {
 
             {/* Navigation */}
             <nav className="hidden md:flex space-x-8">
+              <Link to="/" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
+                Home
+              </Link>
               <div 
                 className="relative"
                 onMouseEnter={() => setCategoryMenuOpen(true)}
@@ -69,9 +72,11 @@ const Header = () => {
               <Link to="/track-order" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
                 Track Order
               </Link>
-              <Link to="/admin" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
-                Admin
-              </Link>
+              {profile?.role === 'admin' && (
+                <Link to="/admin" className="text-charcoal hover:text-sageGreen transition-colors duration-200">
+                  Admin
+                </Link>
+              )}
             </nav>
 
             {/* Right side icons */}
