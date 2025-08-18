@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
+import { useSettings } from '../context/SettingsContext';
 
 const ContactPage = () => {
+  const { settings } = useSettings();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -87,7 +89,7 @@ const ContactPage = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold text-charcoal">Email Us</h4>
-                  <p className="text-gray-600">hello@breathin.store</p>
+                  <p className="text-gray-600">{settings?.contact_email || 'hello@breathin.store'}</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
@@ -96,7 +98,7 @@ const ContactPage = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold text-charcoal">Call Us</h4>
-                  <p className="text-gray-600">1-800-BREATHIN</p>
+                  <p className="text-gray-600">{settings?.contact_phone || '1-800-BREATHIN'}</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
@@ -105,7 +107,7 @@ const ContactPage = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold text-charcoal">Find Us</h4>
-                  <p className="text-gray-600">San Francisco, CA</p>
+                  <p className="text-gray-600">{settings?.contact_address || 'San Francisco, CA'}</p>
                 </div>
               </div>
             </div>

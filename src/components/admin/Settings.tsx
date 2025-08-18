@@ -11,6 +11,7 @@ const Settings = () => {
   // State for all settings
   const [announcementText, setAnnouncementText] = useState('');
   const [siteInfo, setSiteInfo] = useState({ name: '', logoUrl: '', description: '' });
+  const [contactInfo, setContactInfo] = useState({ email: '', phone: '', address: '' });
   const [emailSettings, setEmailSettings] = useState({ admin: '', sender: '' });
   const [shippingSettings, setShippingSettings] = useState({
     threshold: '2500',
@@ -31,6 +32,11 @@ const Settings = () => {
         name: settings.store_name || 'Breathin',
         logoUrl: settings.store_logo_url || '',
         description: settings.store_description || '',
+      });
+      setContactInfo({
+        email: settings.contact_email || '',
+        phone: settings.contact_phone || '',
+        address: settings.contact_address || '',
       });
       setEmailSettings({
         admin: settings.admin_notification_email || '',
@@ -78,6 +84,9 @@ const Settings = () => {
         updateSetting('store_name', siteInfo.name),
         updateSetting('store_logo_url', siteInfo.logoUrl),
         updateSetting('store_description', siteInfo.description),
+        updateSetting('contact_email', contactInfo.email),
+        updateSetting('contact_phone', contactInfo.phone),
+        updateSetting('contact_address', contactInfo.address),
         updateSetting('admin_notification_email', emailSettings.admin),
         updateSetting('sender_email', emailSettings.sender),
         updateSetting('shipping_free_threshold', shippingSettings.threshold),
@@ -135,6 +144,23 @@ const Settings = () => {
             </div>
           </div>
         )}
+      </div>
+      <div className="pt-6 border-t">
+        <h3 className="text-lg font-medium text-gray-900">Public Contact Information</h3>
+        <div className="mt-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
+            <input type="email" value={contactInfo.email} onChange={(e) => setContactInfo(prev => ({ ...prev, email: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+            <input type="text" value={contactInfo.phone} onChange={(e) => setContactInfo(prev => ({ ...prev, phone: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Contact Address</label>
+            <input type="text" value={contactInfo.address} onChange={(e) => setContactInfo(prev => ({ ...prev, address: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+          </div>
+        </div>
       </div>
       <div className="pt-6 border-t">
         <h3 className="text-lg font-medium text-gray-900">Announcement Bar</h3>

@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Instagram, Twitter, Facebook, Mail, Phone, MapPin } from 'lucide-react';
+import { useSettings } from '../context/SettingsContext';
 
 const Footer = () => {
+  const { settings } = useSettings();
+
   return (
     <footer className="bg-charcoal text-white py-16">
       <div className="max-w-7xl mx-auto px-4">
@@ -48,15 +51,15 @@ const Footer = () => {
             <div className="space-y-3 text-sm">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-sageGreen" />
-                <span className="text-gray-300">hello@breathin.store</span>
+                <span className="text-gray-300">{settings?.contact_email || 'hello@breathin.store'}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-sageGreen" />
-                <span className="text-gray-300">1-800-BREATHIN</span>
+                <span className="text-gray-300">{settings?.contact_phone || '1-800-BREATHIN'}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-sageGreen" />
-                <span className="text-gray-300">San Francisco, CA</span>
+                <span className="text-gray-300">{settings?.contact_address || 'San Francisco, CA'}</span>
               </div>
             </div>
           </div>
