@@ -13,7 +13,7 @@ const Settings = () => {
   const [siteInfo, setSiteInfo] = useState({ name: '', logoUrl: '', description: '' });
   const [contactInfo, setContactInfo] = useState({ email: '', phone: '', address: '' });
   const [emailSettings, setEmailSettings] = useState({ admin: '', sender: '' });
-  const [shippingSettings, setShippingSettings] = useState({ threshold: '2500', punjab: '200', other: '300' });
+  const [shippingSettings, setShippingSettings] = useState({ threshold: '1499', punjab: '200', other: '300' });
   const [whatsappSettings, setWhatsappSettings] = useState({ number: '', templateName: '' });
   const [whatsappContactNumber, setWhatsappContactNumber] = useState('');
   
@@ -35,7 +35,7 @@ const Settings = () => {
       setSiteInfo({ name: settings.store_name || 'Breathin', logoUrl: settings.store_logo_url || '', description: settings.store_description || '' });
       setContactInfo({ email: settings.contact_email || '', phone: settings.contact_phone || '', address: settings.contact_address || '' });
       setEmailSettings({ admin: settings.admin_notification_email || '', sender: settings.sender_email || '' });
-      setShippingSettings({ threshold: settings.shipping_free_threshold || '2500', punjab: settings.shipping_cost_punjab || '200', other: settings.shipping_cost_other || '300' });
+      setShippingSettings({ threshold: settings.shipping_free_threshold || '1499', punjab: settings.shipping_cost_punjab || '200', other: settings.shipping_cost_other || '300' });
       setWhatsappSettings({ number: settings.admin_whatsapp_number || '', templateName: settings.whatsapp_template_name || 'new_order_admin_notification' });
       setWhatsappContactNumber(settings.whatsapp_contact_number || '');
       

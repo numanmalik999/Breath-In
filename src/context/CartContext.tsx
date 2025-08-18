@@ -293,7 +293,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const setShippingProvince = (province: string) => {
     const subtotalAfterDiscount = getCartTotal() - getDiscount();
     
-    const freeShippingThreshold = Number(settings?.shipping_free_threshold || 2500);
+    const freeShippingThreshold = Number(settings?.shipping_free_threshold || 1499);
     const costPunjab = Number(settings?.shipping_cost_punjab || 200);
     const costOther = Number(settings?.shipping_cost_other || 300);
 

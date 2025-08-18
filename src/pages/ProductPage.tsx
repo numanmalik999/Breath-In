@@ -5,6 +5,7 @@ import type { Product } from '../data/products';
 import { ShoppingCart, CheckCircle, Star, Minus, Plus, Shield, Truck, RotateCcw } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import { useCart } from '../context/CartContext';
+import { useSettings } from '../context/SettingsContext';
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -15,6 +16,7 @@ const ProductPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const { addToCart } = useCart();
+  const { settings } = useSettings();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -142,7 +144,7 @@ const ProductPage = () => {
               </div>
               <div className="text-xs text-gray-600 flex flex-col items-center space-y-1">
                 <Truck className="h-5 w-5 text-sageGreen" />
-                <span>Free Shipping Over Rs 2500</span>
+                <span>Free Shipping Over Rs {settings?.shipping_free_threshold || 1499}</span>
               </div>
               <div className="text-xs text-gray-600 flex flex-col items-center space-y-1">
                 <RotateCcw className="h-5 w-5 text-sageGreen" />

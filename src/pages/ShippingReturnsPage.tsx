@@ -38,8 +38,8 @@ const ShippingReturnsPage = () => {
                 <h3 className="font-semibold text-charcoal">Shipping Rates & Delivery Estimates</h3>
                 <p className="text-gray-600">{settings?.shipping_rates_text || 'Shipping charges for your order will be calculated and displayed at checkout.'}</p>
                 <ul className="list-disc list-inside text-gray-600 mt-2 space-y-1">
-                  <li><span className="font-medium">Punjab:</span> 2-3 business days (Rs {settings?.shipping_cost_punjab || 200}, free over Rs {settings?.shipping_free_threshold || 2500})</li>
-                  <li><span className="font-medium">Other Provinces:</span> 3-5 business days (Rs {settings?.shipping_cost_other || 300}, free over Rs {settings?.shipping_free_threshold || 2500})</li>
+                  <li><span className="font-medium">Punjab:</span> 2-3 business days (Rs {settings?.shipping_cost_punjab || 200}, free over Rs {settings?.shipping_free_threshold || 1499})</li>
+                  <li><span className="font-medium">Other Provinces:</span> 3-5 business days (Rs {settings?.shipping_cost_other || 300}, free over Rs {settings?.shipping_free_threshold || 1499})</li>
                 </ul>
               </div>
             </div>
