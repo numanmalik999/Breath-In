@@ -141,7 +141,8 @@ const CheckoutPage = () => {
     supabase.functions.invoke('send-order-confirmation', { body: { orderId: orderData.id } }).catch(console.error);
     supabase.functions.invoke('send-whatsapp-order', { body: { orderId: orderData.id } }).catch(console.error);
 
-    clearCart();
+    await clearCart();
+    setLoading(false);
     navigate(`/order-confirmation/${orderData.id}`);
   };
 

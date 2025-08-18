@@ -4,7 +4,6 @@ import { supabase } from '../integrations/supabase/client';
 import { useSettings } from '../context/SettingsContext';
 import { CheckCircle, ShoppingBag } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
-import { useCart } from '../context/CartContext';
 
 interface OrderItem {
   quantity: number;
@@ -32,11 +31,6 @@ const OrderConfirmationPage = () => {
   const { settings } = useSettings();
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const { clearCart } = useCart();
-
-  useEffect(() => {
-    clearCart();
-  }, [clearCart]);
 
   useEffect(() => {
     const fetchOrder = async () => {
