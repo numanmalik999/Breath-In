@@ -142,8 +142,7 @@ const CheckoutPage = () => {
     supabase.functions.invoke('send-whatsapp-order', { body: { orderId: orderData.id } }).catch(console.error);
 
     clearCart();
-    toast.success('Order placed successfully!');
-    navigate('/account');
+    navigate(`/order-confirmation/${orderData.id}`);
   };
 
   if (authLoading || !session) {
