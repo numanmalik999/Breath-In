@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom styles for ReactQuill editor to ensure correct height within a sized container */
+.ql-container {
+  font-size: 1rem; /* Match body font size */
+}
+
+/* When ReactQuill is inside a container with a specific height (like h-48), this ensures the editor part fills the remaining space */
+.h-48 .ql-container {
+  height: calc(100% - 42px); /* 42px is the standard height of the toolbar */
+}

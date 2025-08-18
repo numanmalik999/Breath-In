@@ -169,12 +169,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ onClose, onAddProduct
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Full Description</label>
-            <div className="h-48 quill-container-add">
-              <style>{`
-                .quill-container-add .ql-container {
-                  height: calc(100% - 42px);
-                }
-              `}</style>
+            <div className="h-48">
               <ReactQuill
                 ref={quillRef}
                 theme="snow"
