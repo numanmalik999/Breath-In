@@ -169,14 +169,14 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ onClose, onAddProduct
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Full Description</label>
-            <div className="h-48 mb-10">
+            <div className="h-48">
               <ReactQuill
                 ref={quillRef}
                 theme="snow"
                 value={description}
                 onChange={setDescription}
                 modules={{ toolbar: { container: [['bold', 'italic'], ['link', 'image']], handlers: { image: imageHandler } } }}
-                className="h-full"
+                style={{ height: 'calc(100% - 42px)' }}
               />
             </div>
           </div>
