@@ -19,6 +19,7 @@ const CheckoutPage = () => {
   const { settings } = useSettings();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [isOrderPlaced, setIsOrderPlaced] = useState(false);
   const [selectedProvince, setSelectedProvince] = useState('');
   const [shippingInfo, setShippingInfo] = useState({
     firstName: '',
@@ -33,13 +34,15 @@ const CheckoutPage = () => {
   const whatsappNumber = settings?.whatsapp_contact_number;
 
   useEffect(() => {
+    if (isOrderPlaced) return; // Do not run this effect if an order was just placed
+
     if (!authLoading && !session) {
       navigate('/login?redirect=/checkout');
     }
     if (!authLoading && state.items.length === 0) {
       navigate('/cart');
     }
-  }, [session, authLoading, state.items, navigate]);
+  }, [session, authLoading, state.items, navigate, isOrderPlaced]);
 
   useEffect(() => {
     if (profile) {
@@ -141,6 +144,7 @@ const CheckoutPage = () => {
     supabase.functions.invoke('send-order-confirmation', { body: { orderId: orderData.id } }).catch(console.error);
     supabase.functions.invoke('send-whatsapp-order', { body: { orderId: orderData.id } }).catch(console.error);
 
+    setIsOrderPlaced(true); // Set the flag to prevent the useEffect from redirecting to /cart
     await clearCart();
     setLoading(false);
     navigate(`/order-confirmation/${orderData.id}`);
