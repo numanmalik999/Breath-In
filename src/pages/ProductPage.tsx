@@ -6,6 +6,7 @@ import { ShoppingCart, CheckCircle, Star, Minus, Plus, Shield, Truck, RotateCcw 
 import { formatCurrency } from '../utils/currency';
 import { useCart } from '../context/CartContext';
 import { useSettings } from '../context/SettingsContext';
+import SocialShare from '../components/SocialShare';
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -137,18 +138,21 @@ const ProductPage = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-4 text-center pt-4 border-t">
-              <div className="text-xs text-gray-600 flex flex-col items-center space-y-1">
-                <Shield className="h-5 w-5 text-sageGreen" />
-                <span>Secure Checkout</span>
-              </div>
-              <div className="text-xs text-gray-600 flex flex-col items-center space-y-1">
-                <Truck className="h-5 w-5 text-sageGreen" />
-                <span>Free Shipping Over Rs {settings?.shipping_free_threshold || 1499}</span>
-              </div>
-              <div className="text-xs text-gray-600 flex flex-col items-center space-y-1">
-                <RotateCcw className="h-5 w-5 text-sageGreen" />
-                <span>30-Day Returns</span>
+            <div className="pt-4 border-t space-y-4">
+              <SocialShare url={window.location.href} title={product.name} />
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="text-xs text-gray-600 flex flex-col items-center space-y-1">
+                  <Shield className="h-5 w-5 text-sageGreen" />
+                  <span>Secure Checkout</span>
+                </div>
+                <div className="text-xs text-gray-600 flex flex-col items-center space-y-1">
+                  <Truck className="h-5 w-5 text-sageGreen" />
+                  <span>Free Shipping Over Rs {settings?.shipping_free_threshold || 1499}</span>
+                </div>
+                <div className="text-xs text-gray-600 flex flex-col items-center space-y-1">
+                  <RotateCcw className="h-5 w-5 text-sageGreen" />
+                  <span>30-Day Returns</span>
+                </div>
               </div>
             </div>
           </div>
