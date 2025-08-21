@@ -1,5 +1,6 @@
-import { Facebook, Twitter, Share2, Link as LinkIcon } from 'lucide-react';
+import { Facebook, Twitter, Link as LinkIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import WhatsAppIcon from './WhatsAppIcon';
 
 interface SocialShareProps {
   url: string;
@@ -31,7 +32,7 @@ const SocialShare = ({ url, title }: SocialShareProps) => {
         <Twitter className="h-5 w-5" />
       </a>
       <a href={shareLinks.whatsapp} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-green-500" aria-label="Share on WhatsApp">
-        <Share2 className="h-5 w-5" />
+        <WhatsAppIcon />
       </a>
       <button onClick={copyToClipboard} className="text-gray-500 hover:text-sageGreen" aria-label="Copy link">
         <LinkIcon className="h-5 w-5" />
