@@ -8,7 +8,7 @@ const Footer = () => {
   return (
     <footer className="bg-charcoal text-white py-16">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand Section */}
           <div className="space-y-4 md:col-span-1">
             <div className="text-2xl font-serif font-semibold text-sageGreen">
@@ -51,20 +51,6 @@ const Footer = () => {
                 <MapPin className="h-4 w-4 text-sageGreen" />
                 <span className="text-gray-300">{settings?.contact_address || 'San Francisco, CA'}</span>
               </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Bottom Section */}
-        <div className="border-t border-gray-700 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-gray-400 text-sm">
-              © 2025 Breathin. All rights reserved.
-            </p>
-            <div className="flex space-x-6 text-sm">
-              <a href="#" className="text-gray-400 hover:text-sageGreen transition-colors duration-200">Privacy Policy</a>
-              <a href="#" className="text-gray-400 hover:text-sageGreen transition-colors duration-200">Terms of Service</a>
-              <a href="#" className="text-gray-400 hover:text-sageGreen transition-colors duration-200">Accessibility</a>
             </div>
           </div>
         </div>
