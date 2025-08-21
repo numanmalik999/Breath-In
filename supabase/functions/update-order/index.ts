@@ -26,7 +26,7 @@ serve(async (req) => {
     // 1. Fetch current order details to check for changes
     const { data: currentOrder, error: fetchError } = await supabaseAdmin
       .from('orders')
-      .select('status, tracking_number, user_id')
+      .select('status, tracking_number, customer_email, customer_name')
       .eq('id', orderId)
       .single();
 
@@ -57,48 +57,48 @@ serve(async (req) => {
       if (!RESEND_API_KEY) {
         console.warn('RESEND_API_KEY not set. Skipping email notification.');
       } else {
-        // Fetch user email and settings
-        const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(currentOrder.user_id);
-        if (userError) throw userError;
-        
-        const { data: settingsData, error: settingsError } = await supabaseAdmin.from('settings').select('key, value');
-        if (settingsError) throw settingsError;
-        
-        const settings = settingsData.reduce((acc, setting) => ({ ...acc, [setting.key]: setting.value }), {});
-        const FROM_EMAIL = settings.sender_email || 'onboarding@resend.dev';
-        const STORE_NAME = settings.store_name || 'Breathin';
-        
-        const customerEmail = user.email;
-        const customerFirstName = user.user_metadata.first_name || 'Valued Customer';
+        const customerEmail = currentOrder.customer_email;
+        if (!customerEmail) {
+          console.warn(`Order ${orderId} has no email, skipping notification.`);
+        } else {
+          const { data: settingsData, error: settingsError } = await supabaseAdmin.from('settings').select('key, value');
+          if (settingsError) throw settingsError;
+          
+          const settings = settingsData.reduce((acc, setting) => ({ ...acc, [setting.key]: setting.value }), {});
+          const FROM_EMAIL = settings.sender_email || 'onboarding@resend.dev';
+          const STORE_NAME = settings.store_name || 'Breathin';
+          
+          const customerFirstName = currentOrder.customer_name?.split(' ')[0] || 'Valued Customer';
 
-        let subject = `Update on your ${STORE_NAME} order #${orderId.substring(0, 8)}`;
-        let emailBody = `<p>Hi ${customerFirstName},</p><p>There's an update on your order.</p>`;
-        
-        if (statusChanged) {
-          subject = `Your ${STORE_NAME} order is now ${status}`;
-          emailBody += `<p>Your order status has been updated to: <strong>${status}</strong>.</p>`;
-        }
-
-        if (trackingNumber) {
-          emailBody += `<p>Your tracking number is: <strong>${trackingNumber}</strong>.</p>`;
-          if (courier) {
-            emailBody += `<p>Your courier is: <strong>${courier}</strong>.</p>`;
+          let subject = `Update on your ${STORE_NAME} order #${orderId.substring(0, 8)}`;
+          let emailBody = `<p>Hi ${customerFirstName},</p><p>There's an update on your order.</p>`;
+          
+          if (statusChanged) {
+            subject = `Your ${STORE_NAME} order is now ${status}`;
+            emailBody += `<p>Your order status has been updated to: <strong>${status}</strong>.</p>`;
           }
-        }
-        
-        emailBody += `<p>Thank you for shopping with us!</p><p>The ${STORE_NAME} Team</p>`;
 
-        // Send email via Resend
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
-          body: JSON.stringify({
-            from: `${STORE_NAME} <${FROM_EMAIL}>`,
-            to: [customerEmail],
-            subject: subject,
-            html: emailBody,
-          }),
-        });
+          if (trackingNumber) {
+            emailBody += `<p>Your tracking number is: <strong>${trackingNumber}</strong>.</p>`;
+            if (courier) {
+              emailBody += `<p>Your courier is: <strong>${courier}</strong>.</p>`;
+            }
+          }
+          
+          emailBody += `<p>Thank you for shopping with us!</p><p>The ${STORE_NAME} Team</p>`;
+
+          // Send email via Resend
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
+            body: JSON.stringify({
+              from: `${STORE_NAME} <${FROM_EMAIL}>`,
+              to: [customerEmail],
+              subject: subject,
+              html: emailBody,
+            }),
+          });
+        }
       }
     }
 

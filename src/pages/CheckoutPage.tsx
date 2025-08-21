@@ -23,6 +23,7 @@ const CheckoutPage = () => {
   const [confirmedOrder, setConfirmedOrder] = useState<ConfirmedOrderDetails | null>(null);
   const [selectedProvince, setSelectedProvince] = useState('');
   const [shippingInfo, setShippingInfo] = useState({
+    email: '',
     firstName: '',
     lastName: '',
     phoneNumber: '',
@@ -36,14 +37,10 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     if (confirmedOrder) return;
-
-    if (!authLoading && !session) {
-      navigate('/login?redirect=/checkout');
-    }
     if (!authLoading && state.items.length === 0) {
       navigate('/cart');
     }
-  }, [session, authLoading, state.items, navigate, confirmedOrder]);
+  }, [authLoading, state.items, navigate, confirmedOrder]);
 
   useEffect(() => {
     if (profile) {
@@ -54,7 +51,13 @@ const CheckoutPage = () => {
         phoneNumber: profile.phone_number || '',
       }));
     }
-  }, [profile]);
+    if (session?.user) {
+      setShippingInfo(prev => ({
+        ...prev,
+        email: session.user.email || '',
+      }));
+    }
+  }, [profile, session]);
 
   useEffect(() => {
     if (selectedProvince) {
@@ -69,29 +72,32 @@ const CheckoutPage = () => {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session?.user || state.items.length === 0 || !selectedProvince) {
-      toast.error('Please fill out all required fields and select a province.');
+    if (state.items.length === 0 || !selectedProvince || !shippingInfo.email) {
+      toast.error('Please fill out all required fields, including your email and province.');
       return;
     }
 
     setLoading(true);
 
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({
-        first_name: shippingInfo.firstName,
-        last_name: shippingInfo.lastName,
-        phone_number: shippingInfo.phoneNumber,
-      })
-      .eq('id', session.user.id);
+    if (session?.user) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          first_name: shippingInfo.firstName,
+          last_name: shippingInfo.lastName,
+          phone_number: shippingInfo.phoneNumber,
+        })
+        .eq('id', session.user.id);
 
-    if (profileError) console.error('Error updating profile:', profileError);
-    else await refreshProfile();
+      if (profileError) console.error('Error updating profile:', profileError);
+      else await refreshProfile();
+    }
 
     const { data: orderData, error: orderError } = await supabase
       .from('orders')
       .insert({
-        user_id: session.user.id,
+        user_id: session?.user.id || null,
+        customer_email: shippingInfo.email,
         total_amount: getFinalTotal(),
         subtotal: getCartTotal(),
         discount: getDiscount(),
@@ -151,7 +157,7 @@ const CheckoutPage = () => {
     setConfirmedOrder(fullOrderData as ConfirmedOrderDetails);
   };
 
-  if (authLoading || !session) {
+  if (authLoading) {
     return <div className="text-center py-12">Loading...</div>;
   }
 
@@ -163,7 +169,16 @@ const CheckoutPage = () => {
           <form onSubmit={handlePlaceOrder} className="space-y-6">
             <section>
               <h2 className="text-xl font-semibold mb-2">Contact information</h2>
-              <input type="email" defaultValue={session.user.email} disabled className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100" />
+              <input 
+                type="email" 
+                name="email"
+                value={shippingInfo.email}
+                onChange={handleShippingChange}
+                placeholder="Email address"
+                disabled={!!session} 
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100" 
+              />
             </section>
 
             <section>

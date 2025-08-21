@@ -45,11 +45,12 @@ serve(async (req) => {
     const { data: order, error: orderError } = await supabaseAdmin.from('orders').select('*').eq('id', orderId).single();
     if (orderError) throw orderError;
 
-    // Fetch user email
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(order.user_id);
-    if (userError) throw userError;
-    const customerEmail = user.email;
-    const customerFirstName = user.user_metadata.first_name || 'Valued Customer';
+    // Get customer email from the order itself
+    const customerEmail = order.customer_email;
+    if (!customerEmail) {
+      throw new Error(`Order ${orderId} does not have a customer email.`);
+    }
+    const customerFirstName = order.customer_name?.split(' ')[0] || 'Valued Customer';
 
     // Fetch order items
     const { data: items, error: itemsError } = await supabaseAdmin.from('order_items').select('quantity, price, product:products(name)').eq('order_id', orderId);
