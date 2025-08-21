@@ -25,7 +25,7 @@ const LandingPage = () => {
               {settings?.homepage_hero_subtitle || "Experience instant, drug-free relief from nasal congestion and snoring with our revolutionary magnetic strips. Breathe freely all night, every night."}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <Link to="/product/breathin-starter-kit" className="w-full sm:w-auto bg-sageGreen text-white px-8 py-4 rounded-lg font-medium hover:bg-opacity-90 transform hover:scale-105 transition-all duration-200 shadow-lg">
+              <Link to="/product/breathin-magnetic-nasal-strip-starter-kit" className="w-full sm:w-auto bg-sageGreen text-white px-8 py-4 rounded-lg font-medium hover:bg-opacity-90 transform hover:scale-105 transition-all duration-200 shadow-lg">
                 Shop The Starter Kit
               </Link>
             </div>
@@ -120,7 +120,7 @@ const LandingPage = () => {
                 <div><strong className="text-charcoal">Drug-Free Solution:</strong> A natural, safe, and effective alternative to sprays and pills.</div>
               </li>
             </ul>
-            <Link to="/product/breathin-starter-kit" className="inline-block bg-sageGreen text-white px-8 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-all duration-200">
+            <Link to="/product/breathin-magnetic-nasal-strip-starter-kit" className="inline-block bg-sageGreen text-white px-8 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-all duration-200">
               Try Breathin Today
             </Link>
           </div>
