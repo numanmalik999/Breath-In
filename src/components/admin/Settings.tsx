@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Globe, Shield, Bell, CreditCard, Loader2, Truck, UploadCloud, Trash2, LayoutTemplate, Info, Mail, Package, FileText } from 'lucide-react';
+import { Save, Globe, Shield, Bell, CreditCard, Loader2, Truck, UploadCloud, Trash2, LayoutTemplate, Info, Mail, Package, FileText, Share2 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { supabase } from '../../integrations/supabase/client';
 import PlaceholderContent from './PlaceholderContent';
@@ -16,6 +16,7 @@ const Settings = () => {
   const [shippingSettings, setShippingSettings] = useState({ threshold: '1499', punjab: '200', other: '300' });
   const [whatsappSettings, setWhatsappSettings] = useState({ number: '', templateName: '' });
   const [whatsappContactNumber, setWhatsappContactNumber] = useState('');
+  const [socialLinks, setSocialLinks] = useState({ instagram: '', facebook: '', twitter: '', tiktok: '', youtube: '' });
   
   // Page Content States
   const [homepageContent, setHomepageContent] = useState({ heroTitle: '', heroSubtitle: '', howToTitle: '', howToSubtitle: '', videoUrl: '', benefitsTitle: '' });
@@ -38,6 +39,13 @@ const Settings = () => {
       setShippingSettings({ threshold: settings.shipping_free_threshold || '1499', punjab: settings.shipping_cost_punjab || '200', other: settings.shipping_cost_other || '300' });
       setWhatsappSettings({ number: settings.admin_whatsapp_number || '', templateName: settings.whatsapp_template_name || 'new_order_admin_notification' });
       setWhatsappContactNumber(settings.whatsapp_contact_number || '');
+      setSocialLinks({
+        instagram: settings.social_instagram || 'https://www.instagram.com/breathinginnn/',
+        facebook: settings.social_facebook || 'https://www.facebook.com/breathinn/',
+        twitter: settings.social_twitter || '',
+        tiktok: settings.social_tiktok || '',
+        youtube: settings.social_youtube || '',
+      });
       
       // Page Content
       setHomepageContent({
@@ -102,6 +110,12 @@ const Settings = () => {
         updateSetting('contact_phone', contactInfo.phone),
         updateSetting('contact_address', contactInfo.address),
         updateSetting('whatsapp_contact_number', whatsappContactNumber),
+        // Social Media
+        updateSetting('social_instagram', socialLinks.instagram),
+        updateSetting('social_facebook', socialLinks.facebook),
+        updateSetting('social_twitter', socialLinks.twitter),
+        updateSetting('social_tiktok', socialLinks.tiktok),
+        updateSetting('social_youtube', socialLinks.youtube),
         // Homepage
         updateSetting('homepage_hero_title', homepageContent.heroTitle),
         updateSetting('homepage_hero_subtitle', homepageContent.heroSubtitle),
@@ -142,6 +156,7 @@ const Settings = () => {
 
   const sections = [
     { id: 'general', label: 'General', icon: Globe },
+    { id: 'social', label: 'Social Media', icon: Share2 },
     { id: 'homepage', label: 'Homepage', icon: LayoutTemplate },
     { id: 'about', label: 'About Page', icon: Info },
     { id: 'contact', label: 'Contact Page', icon: Mail },
@@ -214,6 +229,35 @@ const Settings = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Public Contact Number</label>
             <input type="text" value={whatsappContactNumber} onChange={(e) => setWhatsappContactNumber(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="e.g., 923001234567" />
             <p className="text-xs text-gray-500 mt-1">This number is used for the floating WhatsApp button on your site. Include country code without '+' or '00'. Leave blank to hide the button.</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderSocialMediaSettings = () => (
+    <div className="space-y-6">
+      <h3 className="text-lg font-medium text-gray-900">Social Media Links</h3>
+      <p className="text-sm text-gray-500">Enter the full URLs for your social media profiles. Leave blank to hide the icon in the footer.</p>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
+          <input type="text" value={socialLinks.instagram} onChange={(e) => setSocialLinks(prev => ({ ...prev, instagram: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="https://instagram.com/yourprofile" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Facebook</label>
+          <input type="text" value={socialLinks.facebook} onChange={(e) => setSocialLinks(prev => ({ ...prev, facebook: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="https://facebook.com/yourpage" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Twitter / X</label>
+          <input type="text" value={socialLinks.twitter} onChange={(e) => setSocialLinks(prev => ({ ...prev, twitter: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="https://twitter.com/yourhandle" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">TikTok</label>
+          <input type="text" value={socialLinks.tiktok} onChange={(e) => setSocialLinks(prev => ({ ...prev, tiktok: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="https://tiktok.com/@yourprofile" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">YouTube</label>
+          <input type="text" value={socialLinks.youtube} onChange={(e) => setSocialLinks(prev => ({ ...prev, youtube: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="https://youtube.com/yourchannel" />
         </div>
       </div>
     </div>
@@ -401,6 +445,7 @@ const Settings = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'general': return renderGeneralSettings();
+      case 'social': return renderSocialMediaSettings();
       case 'homepage': return renderHomepageSettings();
       case 'about': return renderAboutPageSettings();
       case 'contact': return renderContactPageSettings();

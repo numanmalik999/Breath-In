@@ -18,9 +18,21 @@ const Footer = () => {
               Revolutionary magnetic nasal strips designed to improve your breathing and enhance your sleep quality naturally.
             </p>
             <div className="flex space-x-4">
-              <Instagram className="h-5 w-5 text-gray-400 hover:text-sageGreen cursor-pointer transition-colors duration-200" />
-              <Twitter className="h-5 w-5 text-gray-400 hover:text-sageGreen cursor-pointer transition-colors duration-200" />
-              <Facebook className="h-5 w-5 text-gray-400 hover:text-sageGreen cursor-pointer transition-colors duration-200" />
+              {settings?.social_instagram && (
+                <a href={settings.social_instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                  <Instagram className="h-5 w-5 text-gray-400 hover:text-sageGreen cursor-pointer transition-colors duration-200" />
+                </a>
+              )}
+              {settings?.social_facebook && (
+                <a href={settings.social_facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                  <Facebook className="h-5 w-5 text-gray-400 hover:text-sageGreen cursor-pointer transition-colors duration-200" />
+                </a>
+              )}
+              {settings?.social_twitter && (
+                <a href={settings.social_twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                  <Twitter className="h-5 w-5 text-gray-400 hover:text-sageGreen cursor-pointer transition-colors duration-200" />
+                </a>
+              )}
             </div>
           </div>
           
