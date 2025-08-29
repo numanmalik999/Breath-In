@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { CheckCircle, ShoppingBag, X } from 'lucide-react';
 import { formatCurrency } from '../utils/currency';
 import { useSettings } from '../context/SettingsContext';
@@ -28,6 +28,7 @@ interface OrderConfirmationModalProps {
 
 const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({ order, onClose }) => {
   const { settings } = useSettings();
+  const navigate = useNavigate(); // Use useNavigate hook here
 
   if (!order) return null;
 
@@ -37,6 +38,11 @@ const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({ order, 
     .join(', ');
   const whatsappMessage = `Hi! I've just placed order #${order.id.substring(0, 8)} with the following items: ${orderSummaryText}. Please prioritize it for faster dispatch. Thank you!`;
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+
+  const handleContinueShopping = () => {
+    onClose(); // Close the modal
+    navigate('/shop'); // Navigate to shop page
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
@@ -86,9 +92,12 @@ const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({ order, 
             </a>
           )}
 
-          <Link to="/shop" onClick={onClose} className="mt-4 block text-center text-sageGreen hover:underline">
+          <button 
+            onClick={handleContinueShopping} 
+            className="mt-4 block w-full text-center text-sageGreen hover:underline py-2"
+          >
             Continue Shopping
-          </Link>
+          </button>
         </div>
       </div>
     </div>

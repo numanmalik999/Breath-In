@@ -261,7 +261,9 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
-      <OrderConfirmationModal order={confirmedOrder} onClose={() => setConfirmedOrder(null)} />
+      {confirmedOrder && (
+        <OrderConfirmationModal order={confirmedOrder} onClose={() => setConfirmedOrder(null)} />
+      )}
     </div>
   );
 };
