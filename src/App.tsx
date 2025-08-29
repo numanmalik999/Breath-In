@@ -15,9 +15,9 @@ import ContactPage from './pages/ContactPage';
 import TrackOrderPage from './pages/TrackOrderPage';
 import ShippingReturnsPage from './pages/ShippingReturnsPage';
 import ProductFormPage from './pages/admin/ProductFormPage';
-import { CartProvider } from './context/CartContext';
+import { CartProvider, useCart } from './context/CartContext'; // Import useCart
 import { AuthProvider } from './context/AuthContext';
-import { SearchProvider } from './context/SearchContext';
+import { SearchProvider, useSearch } from './context/SearchContext'; // Import useSearch
 import { SettingsProvider } from './context/SettingsContext';
 import AdminRoute from './components/AdminRoute';
 import CartSlider from './components/CartSlider';
@@ -25,19 +25,24 @@ import SearchModal from './components/SearchModal';
 import AnnouncementBar from './components/AnnouncementBar';
 import WhatsAppButton from './components/WhatsAppButton';
 
-const PublicLayout = () => (
-  <>
-    <AnnouncementBar />
-    <Header />
-    <CartSlider />
-    <SearchModal />
-    <main className="flex-grow">
-      <Outlet />
-    </main>
-    <WhatsAppButton />
-    <Footer />
-  </>
-);
+const PublicLayout = () => {
+  const { state: { isCartOpen } } = useCart(); // Get cart open state
+  const { isSearchOpen } = useSearch(); // Get search open state
+
+  return (
+    <>
+      <AnnouncementBar />
+      <Header />
+      {isCartOpen && <CartSlider />} {/* Only render CartSlider if it's open */}
+      {isSearchOpen && <SearchModal />} {/* Only render SearchModal if it's open */}
+      <main className="flex-grow">
+        <Outlet />
+      </main>
+      <WhatsAppButton />
+      <Footer />
+    </>
+  );
+};
 
 function App() {
   return (
