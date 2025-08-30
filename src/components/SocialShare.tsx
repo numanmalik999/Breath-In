@@ -1,21 +1,26 @@
-import { Facebook, Twitter, Instagram, Link as LinkIcon } from 'lucide-react';
+import { Facebook, Twitter, Link as LinkIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import WhatsAppIcon from './WhatsAppIcon';
 
 interface SocialShareProps {
   url: string;
   title: string;
+  description: string;
+  price: number;
+  currency: string;
 }
 
-const SocialShare = ({ url, title }: SocialShareProps) => {
+const SocialShare = ({ url, title, description, price, currency }: SocialShareProps) => {
   const encodedUrl = encodeURIComponent(url);
-  const encodedTitle = encodeURIComponent(`Check out ${title} from Breathin!`);
+  
+  // More descriptive title for sharing
+  const shareTitle = `Check out ${title} for ${currency} ${price.toLocaleString()} from Breathin! ${description}`;
+  const encodedShareTitle = encodeURIComponent(shareTitle);
 
   const shareLinks = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-    twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
-    whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`,
-    instagram: `https://www.instagram.com/`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedShareTitle}`,
+    whatsapp: `https://api.whatsapp.com/send?text=${encodedShareTitle}%20${encodedUrl}`,
   };
 
   const copyToClipboard = () => {
@@ -31,9 +36,6 @@ const SocialShare = ({ url, title }: SocialShareProps) => {
       </a>
       <a href={shareLinks.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-sky-500" aria-label="Share on Twitter">
         <Twitter className="h-5 w-5" />
-      </a>
-      <a href={shareLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-pink-500" aria-label="Share on Instagram">
-        <Instagram className="h-5 w-5" />
       </a>
       <a href={shareLinks.whatsapp} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-green-500" aria-label="Share on WhatsApp">
         <WhatsAppIcon />

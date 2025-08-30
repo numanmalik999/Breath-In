@@ -65,16 +65,32 @@ const ProductPage = () => {
     return <div className="text-center py-20">Product not found.</div>;
   }
 
+  const currentUrl = window.location.href;
+  const storeName = settings?.store_name || 'Breathin';
+  const currencyCode = 'PKR'; // Based on formatCurrency utility
+
   return (
     <>
       <Helmet>
-        <title>{`${product.name} - Breathin`}</title>
+        <title>{`${product.name} - ${storeName}`}</title>
         <meta name="description" content={product.shortDescription} />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="product" />
+        <meta property="og:url" content={currentUrl} />
         <meta property="og:title" content={product.name} />
         <meta property="og:description" content={product.shortDescription} />
         <meta property="og:image" content={product.images[0]} />
-        <meta property="og:url" content={window.location.href} />
+        <meta property="og:site_name" content={storeName} />
+        <meta property="og:price:amount" content={product.price.toString()} />
+        <meta property="og:price:currency" content={currencyCode} />
+
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={currentUrl} />
+        <meta name="twitter:title" content={product.name} />
+        <meta name="twitter:description" content={product.shortDescription} />
+        <meta name="twitter:image" content={product.images[0]} />
       </Helmet>
       <div className="bg-warmBeige py-12">
         <div className="max-w-6xl mx-auto px-4 space-y-8">
@@ -150,7 +166,7 @@ const ProductPage = () => {
               </div>
 
               <div className="pt-4 border-t space-y-4">
-                <SocialShare url={window.location.href} title={product.name} />
+                <SocialShare url={currentUrl} title={product.name} description={product.shortDescription} price={product.price} currency={currencyCode} />
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div className="text-xs text-gray-600 flex flex-col items-center space-y-1">
                     <Shield className="h-5 w-5 text-sageGreen" />
